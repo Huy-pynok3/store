@@ -19,14 +19,17 @@ interface Product {
   sold: number
   complaints: string
   seller: string
-  sellerVerified: boolean
+  sellerVerified?: boolean
   category: string
   stock: number
-  price: number
+  price?: number
   description: string
-  variants: Variant[]
+  variants?: Variant[]
   features: string[]
   image?: string
+  priceRange?: string
+  detailedDescription?: string
+  badge?: string
 }
 
 interface Review {

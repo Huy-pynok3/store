@@ -45,7 +45,7 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState<'description' | 'reviews' | 'api'>('reviews')
   const [selectedVariant, setSelectedVariant] = useState(
-    product.variants.find(v => v.selected) || product.variants[0]
+    product.variants?.find(v => v.selected) || product.variants?.[0]
   )
   const [showOrderModal, setShowOrderModal] = useState(false)
 
@@ -151,28 +151,30 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
 
               {/* Price */}
               <div className="text-2xl font-bold text-gray-800">
-                {selectedVariant.price.toLocaleString()} VNĐ
+                {selectedVariant?.price?.toLocaleString() || product.price?.toLocaleString() || '0'} VNĐ
               </div>
 
               {/* Variants */}
-              <div>
-                <h3 className="text-xs font-bold text-gray-600 mb-3 uppercase tracking-wide">Sản phẩm</h3>
-                <div className="space-y-2">
-                  {product.variants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      onClick={() => setSelectedVariant(variant)}
-                      className={`w-full text-left px-4 py-3 rounded text-sm transition-colors ${
-                        selectedVariant.id === variant.id
-                          ? 'bg-green-500 text-white font-medium'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {variant.name}
-                    </button>
-                  ))}
+              {product.variants && product.variants.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-600 mb-3 uppercase tracking-wide">Sản phẩm</h3>
+                  <div className="space-y-2">
+                    {product.variants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`w-full text-left px-4 py-3 rounded text-sm transition-colors ${
+                          selectedVariant?.id === variant.id
+                            ? 'bg-green-500 text-white font-medium'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {variant.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Quantity */}
               <div>
@@ -470,7 +472,7 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Mặt hàng:</label>
                 <div className="bg-yellow-400 text-gray-900 px-4 py-3 rounded font-medium text-sm">
-                  {selectedVariant.name}
+                  {selectedVariant?.name || product.name}
                 </div>
               </div>
 
@@ -484,7 +486,7 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-700">Tổng tiền:</span>
                 <span className="font-bold text-gray-900">
-                  {(selectedVariant.price * quantity).toLocaleString()} VNĐ
+                  {((selectedVariant?.price || product.price || 0) * quantity).toLocaleString()} VNĐ
                 </span>
               </div>
 
@@ -498,7 +500,7 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
               <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                 <span className="text-sm font-medium text-gray-700">Tổng thanh toán:</span>
                 <span className="text-xl font-bold text-gray-900">
-                  {(selectedVariant.price * quantity).toLocaleString()} VNĐ
+                  {((selectedVariant?.price || product.price || 0) * quantity).toLocaleString()} VNĐ
                 </span>
               </div>
             </div>

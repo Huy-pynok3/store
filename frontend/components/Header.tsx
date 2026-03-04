@@ -221,8 +221,12 @@ export default function Header() {
               </button>
               {openMobileGroups.account && (
                 <div className="bg-gray-50 border-b border-gray-100">
-                  <Link href="/thong-tin-tai-khoan" onClick={() => setIsMobileMenuOpen(false)} className="block h-10 px-6 leading-[40px] text-gray-600">Hồ sơ</Link>
+                  <Link href="/thong-tin-tai-khoan" onClick={() => setIsMobileMenuOpen(false)} className="block h-10 px-6 leading-[40px] text-gray-600">Thông tin tài khoản</Link>
                   <Link href="/don-hang" onClick={() => setIsMobileMenuOpen(false)} className="block h-10 px-6 leading-[40px] text-gray-600">Đơn hàng đã mua</Link>
+                  <Link href="/gian-hang-yeu-thich" onClick={() => setIsMobileMenuOpen(false)} className="block h-10 px-6 leading-[40px] text-gray-600">Gian hàng yêu thích</Link>
+                  <Link href="/lich-su-thanh-toan" onClick={() => setIsMobileMenuOpen(false)} className="block h-10 px-6 leading-[40px] text-gray-600">Lịch sử thanh toán</Link>
+                  <Link href="/reseller" onClick={() => setIsMobileMenuOpen(false)} className="block h-10 px-6 leading-[40px] text-gray-600">Reseller</Link>
+                  <Link href="/doi-mat-khau" onClick={() => setIsMobileMenuOpen(false)} className="block h-10 px-6 leading-[40px] text-gray-600">Đổi mật khẩu</Link>
                 </div>
               )}
               <button type="button" onClick={() => toggleMobileGroup('language')} className="w-full h-11 px-4 border-b border-gray-100 text-left flex items-center justify-between text-gray-700">

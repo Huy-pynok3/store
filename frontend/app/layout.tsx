@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Roboto } from 'next/font/google'
 import './globals.css'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
+import 'react-quill/dist/quill.snow.css'
+import RouteChrome from '../components/layout/RouteChrome'
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -40,9 +40,7 @@ export default function RootLayout({
         />
       </head>
       <body className={roboto.className}>
-        <Header />
-        {children}
-        <Footer />
+        <RouteChrome>{children}</RouteChrome>
       </body>
     </html>
   )

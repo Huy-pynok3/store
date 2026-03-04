@@ -87,6 +87,13 @@ export default function UserMenu({ isOpen, onClose, onLogout }: UserMenuProps) {
           >
             Đổi mật khẩu
           </Link>
+          <Link
+            href="/quan-ly-cua-hang"
+            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            onClick={onClose}
+          >
+            Quản lý cửa hàng
+          </Link>
         </div>
 
         {/* Logout Button */}
@@ -105,3 +112,4 @@ export default function UserMenu({ isOpen, onClose, onLogout }: UserMenuProps) {
     </>
   )
 }
+

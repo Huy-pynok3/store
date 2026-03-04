@@ -42,9 +42,9 @@ export default function AdSidebar() {
         <i className="fas fa-bullhorn text-4xl mb-3"></i>
         <h3 className="text-lg font-bold mb-2">Quảng cáo tại đây</h3>
         <p className="text-sm mb-4">Tiếp cận hàng ngàn khách hàng tiềm năng</p>
-        <Button size="sm" className="bg-white text-orange-500 hover:bg-gray-100">
+        <button className="bg-white text-orange-500 px-4 py-2 rounded text-sm font-medium hover:bg-gray-100 transition-colors">
           Liên hệ ngay
-        </Button>
+        </button>
       </div>
     </aside>
   )

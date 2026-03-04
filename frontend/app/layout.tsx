@@ -16,8 +16,11 @@ export const metadata: Metadata = {
   keywords: 'mua bán email, tài khoản facebook, phần mềm MMO, gmail, tài khoản số, dịch vụ MMO',
   icons: {
     icon: [
-      { url: '/favicon.ico' }
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.ico', sizes: 'any' }
     ],
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
   openGraph: {
     title: 'TạpHóaMMO - Sàn TMĐT Sản Phẩm Số #1 Việt Nam',

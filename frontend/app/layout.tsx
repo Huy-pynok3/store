@@ -14,14 +14,6 @@ export const metadata: Metadata = {
   title: 'TạpHóaMMO - Sàn Thương Mại Điện Tử Sản Phẩm Số #1 Việt Nam',
   description: 'Mua bán email, tài khoản, phần mềm MMO uy tín. Thanh toán tự động, giữ tiền 3 ngày, check trùng sản phẩm. An toàn - Nhanh chóng - Tin cậy.',
   keywords: 'mua bán email, tài khoản facebook, phần mềm MMO, gmail, tài khoản số, dịch vụ MMO',
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon.ico', sizes: 'any' }
-    ],
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-  },
   openGraph: {
     title: 'TạpHóaMMO - Sàn TMĐT Sản Phẩm Số #1 Việt Nam',
     description: 'Mua bán email, tài khoản, phần mềm MMO uy tín',

@@ -1,12 +1,14 @@
 ﻿'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import LoginPopup from './LoginPopup'
 import UserMenu from './UserMenu'
 import { DropdownMenu, NotificationBadge } from './ui'
 
 export default function Header() {
+  const router = useRouter()
   const [showLoginPopup, setShowLoginPopup] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -37,10 +39,23 @@ export default function Header() {
   }, [isMobileMenuOpen])
 
   const handleUserIconClick = () => {
+    const isMobile = window.innerWidth < 640
+    
     if (isLoggedIn) {
-      setShowUserMenu(true)
+      // On mobile: navigate to account page
+      // On desktop: show user menu popup
+      if (isMobile) {
+        router.push('/thong-tin-tai-khoan')
+      } else {
+        setShowUserMenu(true)
+      }
     } else {
-      setShowLoginPopup(true)
+      // Not logged in
+      if (isMobile) {
+        router.push('/dang-ky')
+      } else {
+        setShowLoginPopup(true)
+      }
     }
   }
 
@@ -105,22 +120,21 @@ export default function Header() {
                 <Link href="/nap-tien" className="text-[13px] text-white/90 hover:opacity-80">Nạp tiền</Link>
               </nav>
             </div>
-            <div className="flex items-center gap-[18px]">
+            <div className="flex items-center gap-3 sm:gap-[18px]">
               <span className="text-xs font-normal hidden md:inline">20.489 VNĐ</span>
-              <Link href="/chat-box" className="relative cursor-pointer hover:opacity-80 transition-opacity hidden sm:inline-block" aria-label="Tin nhắn">
-                <svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h8M8 14h5m-8 5l-1-4a9 9 0 1116.92-2.37A9 9 0 015 19z" />
-                </svg>
+              <Link href="/chat-box" className="relative cursor-pointer hover:opacity-80 transition-opacity leading-none" aria-label="Tin nhắn">
+                <i className="far fa-comment-dots text-[20px] sm:text-[18px]"></i>
                 <NotificationBadge count={0} />
               </Link>
               <button
                 onClick={handleUserIconClick}
-                className="relative h-9 w-9 flex items-center justify-center sm:h-auto sm:w-auto cursor-pointer hover:opacity-80 transition-opacity"
+                className="relative h-9 w-9 flex items-center justify-center sm:h-auto sm:w-auto cursor-pointer hover:opacity-80 transition-opacity leading-none"
               >
-                <svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <svg className="w-[24px] h-[24px] sm:w-[20px] sm:h-[20px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" strokeWidth="2.5" />
+                  <path d="M4 20a8 8 0 0 1 16 0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
                 </svg>
-                <NotificationBadge count={0} />
+                <NotificationBadge count={0} className="hidden sm:flex" />
               </button>
             </div>
           </div>

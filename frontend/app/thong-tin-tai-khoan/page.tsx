@@ -6,9 +6,9 @@ import { PageContainer, Card, Avatar, Button, InfoRow, Badge } from '@/component
 
 export default function AccountInfoPage() {
   const [userData] = useState({
-    username: '@minhcuong203',
+    username: '@test',
     firstName: 'Chưa đặt tên',
-    balance: '000 VNĐ',
+    balance: '0 VNĐ',
     registrationDate: '12/06/2024',
     totalPurchases: '0 sản phẩm',
     totalOrders: '0 gian hàng',

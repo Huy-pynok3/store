@@ -5,9 +5,87 @@ import FilterSidebar from '../../../components/FilterSidebar'
 import ProductCard from '../../../components/ProductCard'
 import AdSidebar from '../../../components/AdSidebar'
 import { Card, Pagination } from '@/components/ui'
-import { emailProducts } from '../../../data/products'
 
-export default function EmailStorePage() {
+const products = [
+  {
+    id: 1,
+    badge: 'Dịch vụ',
+    stock: 99999,
+    name: 'Tăng Like Facebook - Like thật, tương tác cao',
+    rating: 4.9,
+    reviews: 1234,
+    sold: 156789,
+    complaints: '0.0%',
+    seller: 'like_facebook_pro',
+    category: 'Facebook',
+    description: 'Dịch vụ tăng like Facebook giá rẻ - Like thật từ người dùng Việt Nam',
+    features: ['Like thật 100% từ user Việt Nam', 'Tốc độ nhanh 500-1000 like/ngày', 'Bảo hành giảm trong 30 ngày'],
+    priceRange: '50 đ - 150 đ/like',
+    image: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=400&h=300&fit=crop',
+  },
+  {
+    id: 2,
+    badge: 'Dịch vụ',
+    stock: 99999,
+    name: 'Tăng Follow Instagram - Follow thật, không rớt',
+    rating: 4.8,
+    reviews: 987,
+    sold: 98765,
+    complaints: '0.1%',
+    seller: 'insta_follow_vn',
+    category: 'Instagram',
+    description: 'Dịch vụ tăng follow Instagram chất lượng cao - Follow thật, tương tác tốt',
+    features: ['Follow thật từ user nước ngoài', 'Tốc độ 200-500 follow/ngày', 'Bảo hành 60 ngày - Không rớt'],
+    priceRange: '30 đ - 100 đ/follow',
+    image: 'https://images.unsplash.com/photo-1611262588024-d12430b98920?w=400&h=300&fit=crop',
+  },
+  {
+    id: 3,
+    badge: 'Dịch vụ',
+    stock: 99999,
+    name: 'Tăng View TikTok - View thật, tăng reach',
+    rating: 4.9,
+    reviews: 1567,
+    sold: 234567,
+    complaints: '0.0%',
+    seller: 'tiktok_view_master',
+    category: 'TikTok',
+    description: 'Dịch vụ tăng view TikTok giá rẻ - View thật, tăng tỷ lệ lên FYP',
+    features: ['View thật 100% từ user TikTok', 'Tốc độ cực nhanh 10K-50K view/ngày', 'Giúp video lên FYP dễ dàng'],
+    priceRange: '5 đ - 20 đ/view',
+    image: 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=400&h=300&fit=crop',
+  },
+  {
+    id: 4,
+    badge: 'Dịch vụ',
+    stock: 99999,
+    name: 'Tăng Sub YouTube - Sub thật, giữ kênh',
+    rating: 4.7,
+    reviews: 678,
+    sold: 45678,
+    complaints: '0.2%',
+    seller: 'youtube_sub_vn',
+    category: 'YouTube',
+    priceRange: '100 đ - 300 đ/sub',
+    image: 'https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=400&h=300&fit=crop',
+  },
+  {
+    id: 5,
+    badge: 'Dịch vụ',
+    stock: 99999,
+    name: 'Tăng Comment Facebook - Comment có nội dung',
+    rating: 4.8,
+    reviews: 890,
+    sold: 67890,
+    complaints: '0.1%',
+    seller: 'comment_fb_pro',
+    category: 'Facebook',
+    priceRange: '200 đ - 500 đ/comment',
+    image: 'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?w=400&h=300&fit=crop',
+  },
+]
+
+export default function TangTuongTacPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [showMobileFilter, setShowMobileFilter] = useState(false)
 
@@ -24,8 +102,8 @@ export default function EmailStorePage() {
           {/* Breadcrumb & Title */}
           <div className="mb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Gian hàng email</h1>
-              <span className="text-xs sm:text-sm text-gray-600">Tổng 816 gian hàng</span>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Dịch vụ tăng tương tác</h1>
+              <span className="text-xs sm:text-sm text-gray-600">Tổng 1.245 gian hàng</span>
             </div>
           </div>
 
@@ -53,20 +131,20 @@ export default function EmailStorePage() {
             </button>
           </div>
 
-          <Card className="bg-blue-50 border-blue-200 mb-4">
+          <Card className="bg-purple-50 border-purple-200 mb-4">
             <p className="text-xs sm:text-sm text-gray-700">
-              Đối với gian hàng không trùng, chúng tôi cam kết sản phẩm được bán ra 1 lần duy nhất trên hệ thống, tránh trường hợp phần tử được bán nhiều lần.
+              Dịch vụ tăng tương tác giúp tăng độ phủ sóng, uy tín và khả năng tiếp cận khách hàng trên các nền tảng mạng xã hội. Tất cả dịch vụ đều sử dụng tương tác thật từ người dùng thực.
             </p>
           </Card>
 
           {/* Product Grid */}
           <div className="space-y-4">
             {/* Featured Product - Full Width */}
-            {emailProducts[0] && <ProductCard product={emailProducts[0]} featured />}
+            <ProductCard product={products[0]} featured />
 
             {/* Regular Products - 1 Column on Mobile, 2 on Desktop */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {emailProducts.slice(1).map((product) => (
+              {products.slice(1).map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -75,7 +153,7 @@ export default function EmailStorePage() {
           <div className="mt-6">
             <Pagination
               currentPage={currentPage}
-              totalPages={3}
+              totalPages={12}
               onPageChange={setCurrentPage}
             />
           </div>

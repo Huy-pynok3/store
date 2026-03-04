@@ -50,10 +50,10 @@ export default function SidebarCard({
         )}
       </div>
 
-      <p className="mb-1 text-center text-[13px] leading-tight text-[#202020]">
+      <p className="mb-1 text-center text-[13px] leading-tight text-[#202020] break-words">
         Tồn kho: <span className="font-semibold text-[#2a84d7]">{warehouse}</span>
       </p>
-      <p className="mb-2 text-center text-[16px] leading-none font-bold text-[#2d2d2d]">{priceRange}</p>
+      <p className="mb-2 text-center text-[16px] leading-none font-bold text-[#2d2d2d] break-words">{priceRange}</p>
 
       <div className="mb-1.5">
         <Badge variant="success" size="xs" className="uppercase tracking-wide">
@@ -61,25 +61,25 @@ export default function SidebarCard({
         </Badge>
       </div>
 
-      <h3 className="mb-2 text-[17px] leading-tight font-bold uppercase text-[#2d2d2d]">{title}</h3>
+      <h3 className="mb-2 text-[17px] leading-tight font-bold uppercase text-[#2d2d2d] break-words">{title}</h3>
 
-      <div className="mb-1 flex items-center gap-1.5 text-[12px] text-[#6d6d6d]">
+      <div className="mb-1 flex items-center gap-1.5 text-[12px] text-[#6d6d6d] flex-wrap">
         <StarRating rating={rating} size="xs" />
-        <span>{reviews} Reviews</span>
+        <span className="break-words">{reviews} Reviews</span>
       </div>
 
-      <p className="mb-1 text-[12px] leading-tight text-[#6a6a6a]">
+      <p className="mb-1 text-[12px] leading-tight text-[#6a6a6a] break-words">
         Đã bán: {sold.toLocaleString()} | Khiếu nại: {complaints}
       </p>
-      <p className="mb-1 text-[12px] text-[#6a6a6a]">
+      <p className="mb-1 text-[12px] text-[#6a6a6a] break-words">
         Người bán: <span className="font-medium text-[#2f9d59]">{seller}</span>
       </p>
-      <p className="mb-1.5 text-[12px] text-[#6a6a6a]">Sản phẩm: {category}</p>
+      <p className="mb-1.5 text-[12px] text-[#6a6a6a] break-words">Sản phẩm: {category}</p>
 
       {features.length > 0 && (
         <ul className="mb-2 list-disc pl-4 text-[11px] leading-[1.3] text-[#585858]">
           {features.slice(0, 5).map((feature, index) => (
-            <li key={index}>{feature}</li>
+            <li key={index} className="break-words">{feature}</li>
           ))}
         </ul>
       )}

@@ -47,25 +47,28 @@ export default function Home() {
                 className="object-cover"
                 priority
               />
-              <div className="absolute inset-0 bg-white/70"></div>
+              <div className="absolute inset-0 bg-white/45"></div>
               
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] max-w-[95%] z-10 px-2 sm:px-0">
+              <div className="absolute top-[46%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[860px] max-w-[80%] sm:max-w-[95%] z-10 px-2 sm:px-0">
                 <div className="flex flex-col sm:flex-row gap-2 mb-2">
-                  <select className="w-full sm:flex-1 px-2.5 py-1.5 border border-[#dcdcdc] rounded-sm text-[13px] h-[31px] font-[Arial,Helvetica,sans-serif]">
+                  <select className="w-full sm:w-auto sm:flex-1 px-3 border border-[#d8d8d8] rounded-sm text-[13px] h-[34px] bg-white text-black font-[Arial,Helvetica,sans-serif]">
                     <option>Tùy chọn tìm kiếm</option>
                   </select>
-                  <select className="w-full sm:flex-[0_0_30%] px-2.5 py-1.5 border border-[#dcdcdc] rounded-sm text-[13px] h-[31px] opacity-65 bg-white/60 font-[Arial,Helvetica,sans-serif]">
+                  <select className="w-full sm:w-auto sm:flex-[0_0_30%] px-3 border border-[#d8d8d8] rounded-sm text-[13px] h-[34px] text-[#666] bg-white/70 font-[Arial,Helvetica,sans-serif]">
+                    <option></option>
+                  </select>
+                  <select className="w-full sm:w-auto sm:flex-[0_0_30%] px-3 border border-[#d8d8d8] rounded-sm text-[13px] h-[34px] text-[#666] bg-white/70 font-[Arial,Helvetica,sans-serif]">
                     <option>Tất cả</option>
                   </select>
                 </div>
                 <input
                   type="text"
                   placeholder="Tìm gian hàng hoặc người bán"
-                  className="w-full px-2.5 py-1.5 border border-[#dcdcdc] rounded-sm text-[13px] h-[31px] mb-2 font-[Arial,Helvetica,sans-serif]"
+                  className="w-full px-3 border border-[#d8d8d8] rounded-sm text-[13px] h-[36px] mb-2 bg-white text-[#444] placeholder:text-[#8e97a3] font-[Arial,Helvetica,sans-serif]"
                 />
                 <Button 
                   variant="success" 
-                  className="w-full sm:w-[125px] mx-auto block text-[13px] h-[33px] font-[Arial,Helvetica,sans-serif]"
+                  className="w-full sm:w-[130px] mx-auto block text-[14px] h-[36px] font-semibold font-[Arial,Helvetica,sans-serif]"
                 >
                   Tìm kiếm
                 </Button>

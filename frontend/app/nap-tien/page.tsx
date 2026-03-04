@@ -100,20 +100,21 @@ export default function RechargeGiftCodePage() {
                     <div>bank</div>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-sm mb-1">
-                    <span className="text-gray-600">STK:</span> <span className="font-medium">0711009233564</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm mb-1 break-words">
+                    <span className="text-gray-600">STK:</span> <span className="font-medium">101877183706</span>
                   </div>
-                  <div className="text-sm mb-1">
-                    <span className="text-gray-600">Người nhận:</span> <span className="font-medium">Phạm Thành Tùng</span>
+                  <div className="text-sm mb-1 break-words">
+                    <span className="text-gray-600">Người nhận:</span> <span className="font-medium">Trần Quang Huy</span>
                   </div>
                   <div className="text-sm flex flex-wrap items-center gap-2">
-                    <span className="text-gray-600">Nội dung chuyển khoản:</span>
-                    <span className="font-bold text-green-600">TS 914600</span>
+                    <span className="text-gray-600 whitespace-nowrap">Nội dung chuyển khoản:</span>
+                    <span className="font-bold text-green-600 break-all">TS 914600</span>
                     <Button
                       onClick={() => copyToClipboard('TS 914600')}
                       variant="danger"
                       size="sm"
+                      className="shrink-0"
                     >
                       Copy
                     </Button>

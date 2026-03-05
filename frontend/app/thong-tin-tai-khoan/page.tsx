@@ -4,6 +4,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { PageContainer, Card, Avatar, Button, InfoRow, Badge } from '@/components/ui'
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic'
+
 export default function AccountInfoPage() {
   const [userData] = useState({
     username: '@test',

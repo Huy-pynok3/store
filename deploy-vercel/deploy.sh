@@ -25,7 +25,7 @@ fi
 # Install backend dependencies
 echo "Installing backend dependencies..."
 cd backend
-npm ci --production=false
+npm install
 
 # Generate Prisma client
 echo "Generating Prisma client..."

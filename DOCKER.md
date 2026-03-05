@@ -2,15 +2,20 @@
 
 Single docker-compose.yml for both development and production using environment variables.
 
-## Development Environment
+## Setup Options
+
+### Option 1: Full Stack (Development)
+Use when developing both frontend and backend locally.
+
+### Option 2: Backend Only (Vercel Frontend)
+Use when frontend is deployed on Vercel and you only need backend locally or on EC2.
+
+## Full Stack Development
 
 ### Quick Start
 
 ```bash
-# Copy environment file
-cp .env.example .env
-
-# Start all services
+# Start all services (backend + frontend + databases)
 docker-compose up -d
 
 # View logs
@@ -18,23 +23,49 @@ docker-compose logs -f
 
 # Stop all services
 docker-compose down
-
-# Stop and remove volumes (clean slate)
-docker-compose down -v
 ```
 
-### Services
+## Backend Only (Frontend on Vercel)
 
-- **PostgreSQL**: `localhost:5432`
-- **Redis**: `localhost:6379`
-- **Backend API**: `localhost:3001`
-- **Frontend**: `localhost:3000`
+### Quick Start
+
+```bash
+# Start backend services only
+docker-compose -f docker-compose.backend-only.yml up -d
+
+# View logs
+docker-compose -f docker-compose.backend-only.yml logs -f
+
+# Stop services
+docker-compose -f docker-compose.backend-only.yml down
+```
+
+### Configuration
+
+Backend will be accessible at `http://localhost:3001`
+
+Update `FRONTEND_URL` in backend/.env to your Vercel domain:
+```env
+FRONTEND_URL=https://your-app.vercel.app
+```
+
+Update Vercel environment variables:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api  # For local dev
+# or
+NEXT_PUBLIC_API_URL=https://api.your-domain.com/api  # For production
+```
+
+## Common Commands
 
 ### Database Migrations
 
 ```bash
-# Run migrations
+# Full stack
 docker-compose exec backend npx prisma migrate dev
+
+# Backend only
+docker-compose -f docker-compose.backend-only.yml exec backend npx prisma migrate dev
 
 # Generate Prisma Client
 docker-compose exec backend npx prisma generate
@@ -51,7 +82,6 @@ docker-compose up -d --build backend
 
 # View service logs
 docker-compose logs -f backend
-docker-compose logs -f frontend
 
 # Execute command in container
 docker-compose exec backend npm run test

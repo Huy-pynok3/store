@@ -1,17 +1,23 @@
 #!/bin/bash
 
 # Deployment script for Backend API (Frontend on Vercel)
-# Run this from the project root directory
+# Can be run from anywhere
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 echo "=========================================="
 echo "Starting Backend API Deployment"
+echo "Project root: $PROJECT_ROOT"
 echo "=========================================="
 
 # Check if .env file exists
 if [ ! -f "backend/.env" ]; then
     echo "Error: backend/.env not found!"
+    echo "Expected at: $PROJECT_ROOT/backend/.env"
     echo "Please copy deploy-vercel/.env.production.example to backend/.env and configure it"
     exit 1
 fi

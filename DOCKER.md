@@ -56,6 +56,56 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api  # For local dev
 NEXT_PUBLIC_API_URL=https://api.your-domain.com/api  # For production
 ```
 
+## Database Only (Backend with PM2)
+
+For production on EC2, run only databases in Docker and backend with PM2:
+
+### Quick Start
+
+```bash
+# Start only PostgreSQL and Redis
+docker-compose -f docker-compose.db-only.yml up -d
+
+# Install backend dependencies
+cd backend
+npm install
+
+# Run migrations
+npm run prisma:migrate
+
+# Start backend with PM2
+pm2 start npm --name "backend" -- run start:prod
+pm2 save
+```
+
+### Configuration
+
+Update backend/.env:
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5433/marketplace
+REDIS_HOST=localhost
+REDIS_PORT=6380
+```
+
+### PM2 Commands
+
+```bash
+# View status
+pm2 status
+
+# View logs
+pm2 logs backend
+
+# Restart
+pm2 restart backend
+
+# Stop
+pm2 stop backend
+
+# Monitor
+pm2 monit
+```
+
 ## Common Commands
 
 ### Database Migrations

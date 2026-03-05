@@ -1,8 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Swal from 'sweetalert2'
+import { API_ENDPOINTS } from '@/lib/api'
+import { PasswordInput } from '@/components/ui'
+import { getErrorMessage } from '@/lib/errorMessages'
 
 interface LoginPopupProps {
   isOpen: boolean
@@ -10,18 +14,152 @@ interface LoginPopupProps {
 }
 
 export default function LoginPopup({ isOpen, onClose }: LoginPopupProps) {
-  const [rememberMe, setRememberMe] = useState(true)
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: true
+  })
+  const [errors, setErrors] = useState({
+    email: '',
+    password: ''
+  })
 
   if (!isOpen) return null
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }))
+    
+    // Clear error when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }))
+    }
+  }
+
+  const validateField = (fieldName: string, value: string): string => {
+    let error = ''
+    
+    switch (fieldName) {
+      case 'email':
+        if (!value) {
+          error = 'Vui lòng nhập email'
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          error = 'Email không hợp lệ'
+        }
+        break
+      case 'password':
+        if (!value) {
+          error = 'Vui lòng nhập mật khẩu'
+        }
+        break
+    }
+    
+    return error
+  }
+
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    router.push('/dang-nhap')
+    
+    if (isSubmitting) return
+
+    // Validate fields in order - only show first error
+    const emailError = validateField('email', formData.email)
+    if (emailError) {
+      setErrors({ email: emailError, password: '' })
+      return
+    }
+    
+    const passwordError = validateField('password', formData.password)
+    if (passwordError) {
+      setErrors({ email: '', password: passwordError })
+      return
+    }
+    
+    // Clear all errors if validation passes
+    setErrors({ email: '', password: '' })
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          rememberMe: formData.rememberMe,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.access_token) {
+        // Store JWT token
+        localStorage.setItem('access_token', data.access_token)
+        localStorage.setItem('isLoggedIn', 'true')
+        
+        // Dispatch storage event to update other components
+        window.dispatchEvent(new Event('storage'))
+        
+        // Close popup
+        onClose()
+        
+        // Show success message
+        await Swal.fire({
+          icon: 'success',
+          title: 'Đăng nhập thành công!',
+          text: 'Chào mừng bạn quay trở lại',
+          confirmButtonText: 'OK',
+          timer: 1500
+        })
+        
+        // Reload to update UI
+        window.location.reload()
+      } else {
+        // Show error message
+        await Swal.fire({
+          icon: 'error',
+          title: 'Đăng nhập thất bại',
+          text: getErrorMessage(data.message),
+          confirmButtonText: 'OK'
+        })
+      }
+    } catch (error) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: 'Không thể kết nối đến máy chủ',
+        confirmButtonText: 'OK'
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleGoogleLogin = () => {
-    router.push('/dang-nhap')
+    onClose() // Close popup before navigation
+    window.location.href = API_ENDPOINTS.AUTH.GOOGLE
+  }
+
+  const handleRegisterClick = () => {
+    onClose() // Close popup before navigation
+    router.push('/dang-ky')
+  }
+
+  const handleForgotPassword = () => {
+    onClose()
+    router.push('/quen-mat-khau')
   }
 
   return (
@@ -43,23 +181,48 @@ export default function LoginPopup({ isOpen, onClose }: LoginPopupProps) {
           <div>
             <input
               type="email"
+              name="email"
               placeholder="email"
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 ${
+                errors.email 
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:border-primary focus:ring-primary'
+              }`}
             />
+            {errors.email && (
+              <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+            )}
           </div>
 
           {/* Password Input with Forgot Link */}
           <div>
             <div className="flex items-center gap-2">
-              <input
-                type="password"
-                placeholder="Mật khẩu"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-              <Link href="/quen-mat-khau" className="text-xs text-gray-500 hover:text-primary whitespace-nowrap">
+              <div className="flex-1">
+                <PasswordInput
+                  name="password"
+                  placeholder="Mật khẩu"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 ${
+                    errors.password 
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                      : 'border-gray-300 focus:border-primary focus:ring-primary'
+                  }`}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-xs text-gray-500 hover:text-primary whitespace-nowrap"
+              >
                 Quên mật khẩu
-              </Link>
+              </button>
             </div>
+            {errors.password && (
+              <p className="text-xs text-red-500 mt-1">{errors.password}</p>
+            )}
           </div>
 
           {/* Remember Me Checkbox */}
@@ -67,8 +230,9 @@ export default function LoginPopup({ isOpen, onClose }: LoginPopupProps) {
             <input
               type="checkbox"
               id="remember"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+              name="rememberMe"
+              checked={formData.rememberMe}
+              onChange={handleInputChange}
               className="w-3.5 h-3.5 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer"
             />
             <label htmlFor="remember" className="ml-2 text-sm text-gray-700 cursor-pointer">
@@ -79,9 +243,10 @@ export default function LoginPopup({ isOpen, onClose }: LoginPopupProps) {
           {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded text-sm transition-colors"
+            disabled={isSubmitting}
+            className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Đăng nhập
+            {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
 
           {/* Google Login */}
@@ -102,9 +267,13 @@ export default function LoginPopup({ isOpen, onClose }: LoginPopupProps) {
 
         {/* Register Link */}
         <div className="mt-6 text-center">
-          <Link href="/dang-ky" className="text-sm text-gray-600 hover:text-primary transition-colors">
+          <button
+            type="button"
+            onClick={handleRegisterClick}
+            className="text-sm text-gray-600 hover:text-primary transition-colors"
+          >
             Đăng ký
-          </Link>
+          </button>
         </div>
       </div>
     </>

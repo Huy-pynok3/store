@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useAuth } from '@/hooks/useAuth'
 
 interface UserMenuProps {
   isOpen: boolean
@@ -9,6 +10,8 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ isOpen, onClose, onLogout }: UserMenuProps) {
+  const { user } = useAuth()
+
   if (!isOpen) return null
 
   return (
@@ -30,8 +33,8 @@ export default function UserMenu({ isOpen, onClose, onLogout }: UserMenuProps) {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-800 truncate">dax_1ymyqq</p>
-              <p className="text-xs text-gray-500 truncate">ryufghgttqg3576@gmail.com</p>
+              <p className="text-sm font-semibold text-gray-800 truncate">{user?.username || 'User'}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
             </div>
           </div>
         </div>

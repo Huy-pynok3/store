@@ -6,12 +6,13 @@ import { useState, useEffect } from 'react'
 import LoginPopup from './LoginPopup'
 import UserMenu from './UserMenu'
 import { DropdownMenu, NotificationBadge } from './ui'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function Header() {
   const router = useRouter()
+  const { isLoggedIn, user, logout } = useAuth()
   const [showLoginPopup, setShowLoginPopup] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [openMobileGroups, setOpenMobileGroups] = useState<Record<string, boolean>>({
     product: false,
@@ -20,12 +21,6 @@ export default function Header() {
     language: false,
     account: false,
   })
-
-  // Check login status from localStorage
-  useEffect(() => {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
-    setIsLoggedIn(loggedIn)
-  }, [])
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -60,8 +55,7 @@ export default function Header() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn')
-    setIsLoggedIn(false)
+    logout()
   }
 
   const toggleMobileGroup = (key: keyof typeof openMobileGroups) => {
@@ -117,15 +111,23 @@ export default function Header() {
                 </Link>
                 <DropdownMenu title="Công cụ" items={toolItems} />
                 <Link href="/faqs" className="text-[13px] text-white/90 hover:opacity-80">FAQs</Link>
-                <Link href="/nap-tien" className="text-[13px] text-white/90 hover:opacity-80">Nạp tiền</Link>
+                {isLoggedIn && (
+                  <Link href="/nap-tien" className="text-[13px] text-white/90 hover:opacity-80">Nạp tiền</Link>
+                )}
               </nav>
             </div>
             <div className="flex items-center gap-3 sm:gap-[18px]">
-              <span className="text-xs font-normal hidden md:inline">20.489 VNĐ</span>
-              <Link href="/chat-box" className="relative cursor-pointer hover:opacity-80 transition-opacity leading-none" aria-label="Tin nhắn">
-                <i className="far fa-comment-dots text-[20px] sm:text-[18px]"></i>
-                <NotificationBadge count={0} />
-              </Link>
+              {isLoggedIn && (
+                <span className="text-xs font-normal hidden md:inline">
+                  {user ? `${user.balance.toLocaleString('vi-VN')} VNĐ` : '0 VNĐ'}
+                </span>
+              )}
+              {isLoggedIn && (
+                <Link href="/chat-box" className="relative cursor-pointer hover:opacity-80 transition-opacity leading-none" aria-label="Tin nhắn">
+                  <i className="far fa-comment-dots text-[20px] sm:text-[18px]"></i>
+                  <NotificationBadge count={0} />
+                </Link>
+              )}
               <button
                 onClick={handleUserIconClick}
                 className="relative h-9 w-9 flex items-center justify-center sm:h-auto sm:w-auto cursor-pointer hover:opacity-80 transition-opacity leading-none"
@@ -145,7 +147,9 @@ export default function Header() {
             <Link href="/chia-se" className="hover:opacity-80">Chia sẻ</Link>
             <Link href="/cong-cu/2fa" className="hover:opacity-80">Công cụ</Link>
             <Link href="/faqs" className="hover:opacity-80">FAQs</Link>
-            <Link href="/nap-tien" className="hover:opacity-80">Nạp tiền</Link>
+            {isLoggedIn && (
+              <Link href="/nap-tien" className="hover:opacity-80">Nạp tiền</Link>
+            )}
           </nav>
         </div>
       </header>
@@ -214,7 +218,9 @@ export default function Header() {
                   ))}
                 </div>
               )}
-              <Link href="/nap-tien" onClick={() => setIsMobileMenuOpen(false)} className="block h-11 px-4 leading-[44px] border-b border-gray-100 text-gray-700">Nạp tiền</Link>
+              {isLoggedIn && (
+                <Link href="/nap-tien" onClick={() => setIsMobileMenuOpen(false)} className="block h-11 px-4 leading-[44px] border-b border-gray-100 text-gray-700">Nạp tiền</Link>
+              )}
               <Link href="/chia-se" onClick={() => setIsMobileMenuOpen(false)} className="block h-11 px-4 leading-[44px] border-b border-gray-100 text-gray-700">Chia sẻ kinh nghiệm MMO</Link>
               <button type="button" onClick={() => toggleMobileGroup('account')} className="w-full h-11 px-4 border-b border-gray-100 text-left flex items-center justify-between text-gray-700">
                 <span>Thông tin tài khoản</span><i className={`fas ${openMobileGroups.account ? 'fa-chevron-up' : 'fa-chevron-down'} text-[11px] text-gray-500`}></i>

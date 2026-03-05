@@ -106,3 +106,10 @@ tmp/
 package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+# BMAD
+_bmad/
+
+# Local AI tooling
+.agent/
+.claude/
+.cursor/

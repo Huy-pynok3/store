@@ -1,0 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ProductType {
+  ACCOUNT
+  SOFTWARE
+  EMAIL
+  SERVICE
+  OTHER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique @db.VarChar(20)
+  passwordHash  String?
+  googleId      String?   @unique
+  fullName      String?
+  phone         String?
+  balance       Float     @default(0)
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  shop          Shop?
+  orders        Order[]
+  purchases     Purchase[]
+  transactions  Transaction[]
+  
+  @@index([email])
+  @@index([username])
+  @@index([googleId])
+}
+
+model Shop {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  name          String
+  description   String?
+  logo          String?
+  isActive      Boolean   @default(true)
+  rating        Float     @default(0)
+  totalSales    Int       @default(0)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products      Product[]
+  
+  @@index([userId])
+  @@index([isActive])
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  shopId        String
+  name          String
+  description   String
+  type          ProductType
+  price         Float
+  stock         Int         @default(0)
+  sold          Int         @default(0)
+  images        String[]
+  isActive      Boolean     @default(true)
+  autoDeliver   Boolean     @default(false)
+  
+  // Metadata for different product types
+  metadata      Json?
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Relations
+  shop          Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orderItems    OrderItem[]
+  purchases     Purchase[]
+  inventory     Inventory[]
+  
+  @@index([shopId])
+  @@index([type])
+  @@index([isActive])
+}
+
+model Inventory {
+  id            String    @id @default(cuid())
+  productId     String
+  data          String    // Account credentials, license key, etc.
+  isSold        Boolean   @default(false)
+  soldAt        DateTime?
+  
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([productId, isSold])
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  userId        String
+  orderNumber   String        @unique
+  totalAmount   Float
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  user          User          @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+  payment       Payment?
+  
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id            String    @id @default(cuid())
+  orderId       String
+  productId     String
+  quantity      Int
+  price         Float
+  deliveredData String?   // Data delivered to customer
+  
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product   @relation(fields: [productId], references: [id])
+  
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String        @unique
+  amount        Float
+  method        String        // BANK_TRANSFER, MOMO, ZALOPAY, etc.
+  status        PaymentStatus @default(PENDING)
+  transactionId String?
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
+  @@index([status])
+}
+
+model Purchase {
+  id            String    @id @default(cuid())
+  userId        String
+  productId     String
+  orderId       String?
+  status        OrderStatus
+  
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  user          User      @relation(fields: [userId], references: [id])
+  product       Product   @relation(fields: [productId], references: [id])
+  
+  // Prevent duplicate purchases
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Transaction {
+  id            String    @id @default(cuid())
+  userId        String
+  amount        Float
+  type          String    // DEPOSIT, WITHDRAW, PURCHASE, REFUND
+  description   String?
+  balanceBefore Float
+  balanceAfter  Float
+  
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  user          User      @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([type])
+}

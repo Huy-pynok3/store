@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Roboto } from 'next/font/google'
 import './globals.css'
 import 'react-quill/dist/quill.snow.css'
@@ -40,6 +41,10 @@ export default function RootLayout({
         />
       </head>
       <body className={roboto.className}>
+        <Script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+          strategy="beforeInteractive"
+        />
         <RouteChrome>{children}</RouteChrome>
       </body>
     </html>

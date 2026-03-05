@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://api.your-domain.com/api",
+    "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "@turnstile_site_key",
+    "NEXT_PUBLIC_TURNSTILE_ENABLED": "true",
+    "NEXT_PUBLIC_GOOGLE_CLIENT_ID": "@google_client_id"
+  }
+}

@@ -1,26 +1,28 @@
 'use client'
 
-import { useState } from 'react'
 import { Card, Button, Checkbox, ArticleCard } from './ui'
+import { SubTypeCount } from '@/types/listing'
 
-const categories = [
-  { id: 'gmail', name: 'Gmail', count: 15 },
-  { id: 'hotmail', name: 'Hotmail', count: 8 },
-  { id: 'outlookmail', name: 'OutlookMail', count: 12 },
-  { id: 'iuumail', name: 'IuuMail', count: 3 },
-  { id: 'domainmail', name: 'DomainMail', count: 6 },
-  { id: 'yahoomail', name: 'YahooMail', count: 4 },
-  { id: 'protonmail', name: 'ProtonMail', count: 2 },
-  { id: 'loai-mail-khac', name: 'Loại Mail Khác', count: 7 },
-]
+interface FilterSidebarProps {
+  subTypeCounts?: SubTypeCount[]
+  selectedSubTypes?: string[]
+  onSubTypesChange?: (subTypes: string[]) => void
+  onSearch?: () => void
+}
 
-export default function FilterSidebar() {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-
-  const toggleCategory = (id: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-    )
+export default function FilterSidebar({
+  subTypeCounts = [],
+  selectedSubTypes = [],
+  onSubTypesChange,
+  onSearch
+}: FilterSidebarProps) {
+  const toggleSubType = (value: string) => {
+    if (!onSubTypesChange) return
+    
+    const newSelection = selectedSubTypes.includes(value)
+      ? selectedSubTypes.filter(v => v !== value)
+      : [...selectedSubTypes, value]
+    onSubTypesChange(newSelection)
   }
 
   return (
@@ -33,20 +35,20 @@ export default function FilterSidebar() {
             Chọn 1 hoặc nhiều sản phẩm
           </h4>
           <div className="space-y-2">
-            {categories.map((cat) => (
-              <div key={cat.id} className="flex items-center justify-between">
+            {subTypeCounts.map((subType) => (
+              <div key={subType.value} className="flex items-center justify-between">
                 <Checkbox
-                  checked={selectedCategories.includes(cat.id)}
-                  onChange={() => toggleCategory(cat.id)}
-                  label={cat.name}
+                  checked={selectedSubTypes.includes(subType.value)}
+                  onChange={() => toggleSubType(subType.value)}
+                  label={subType.label}
                 />
-                <span className="text-xs text-gray-500">({cat.count})</span>
+                <span className="text-xs text-gray-500">({subType.count})</span>
               </div>
             ))}
           </div>
         </div>
 
-        <Button variant="success" fullWidth>
+        <Button variant="success" fullWidth onClick={onSearch}>
           Tìm kiếm
         </Button>
       </Card>

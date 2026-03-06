@@ -14,6 +14,22 @@ export const API_ENDPOINTS = {
   USERS: {
     ME: `${API_BASE_URL}/api/users/me`,
   },
+  CHAT: {
+    CONVERSATIONS: `${API_BASE_URL}/api/chat/conversations`,
+    conversationMessages: (conversationId: string) =>
+      `${API_BASE_URL}/api/chat/conversations/${conversationId}/messages`,
+    conversationRead: (conversationId: string) =>
+      `${API_BASE_URL}/api/chat/conversations/${conversationId}/read`,
+  },
+  PRODUCTS: {
+    warehouseConfig: (productId: string) =>
+      `${API_BASE_URL}/api/products/${productId}/warehouse`,
+    warehouseTest: (productId: string) =>
+      `${API_BASE_URL}/api/products/${productId}/warehouse/test`,
+    warehouseTestUrl: `${API_BASE_URL}/api/products/warehouse/test-url`,
+    warehouseStock: (productId: string) =>
+      `${API_BASE_URL}/api/products/${productId}/warehouse/stock`,
+  },
   // Add more endpoints as needed
 }
 

@@ -70,7 +70,7 @@ export class UsersService {
         throw new NotFoundException('User not found');
       }
 
-      const newBalance = user.balance + amount;
+      const newBalance = user.balance.toNumber() + amount;
 
       if (newBalance < 0) {
         throw new ConflictException('Insufficient balance');

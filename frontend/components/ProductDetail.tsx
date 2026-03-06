@@ -30,6 +30,8 @@ interface Product {
   priceRange?: string
   detailedDescription?: string
   badge?: string
+  priceLabel?: string
+  emptyInventoryMessage?: string
 }
 
 interface Review {
@@ -48,6 +50,8 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
     product.variants?.find(v => v.selected) || product.variants?.[0]
   )
   const [showOrderModal, setShowOrderModal] = useState(false)
+  const selectedPrice = selectedVariant?.price ?? product.price ?? 0
+  const displayPrice = product.priceLabel || `${selectedPrice.toLocaleString()} VNĐ`
 
   return (
     <div className="max-w-[1600px] w-full mx-auto px-3 py-3">
@@ -77,13 +81,18 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
             <div className="bg-white border border-gray-200 rounded-sm p-4">
               <div className="relative">
                 {/* Product Image */}
-                <div className="w-full h-[280px] sm:h-[360px] lg:h-[400px] bg-gradient-to-br from-red-400 to-pink-500 rounded flex items-center justify-center border-4 border-primary">
-                  <div className="text-center">
-                    <div className="text-white text-5xl mb-3">
-                      <i className="fab fa-google"></i>
+                <div className="w-full h-[280px] sm:h-[360px] lg:h-[400px] rounded flex items-center justify-center overflow-hidden">
+                  {product.image ? (
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center">
+                      <i className="fas fa-image text-white text-6xl"></i>
                     </div>
-                    <div className="text-white text-2xl font-bold">Gmail</div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Badges */}
@@ -151,7 +160,7 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
 
               {/* Price */}
               <div className="text-2xl font-bold text-gray-800">
-                {selectedVariant?.price?.toLocaleString() || product.price?.toLocaleString() || '0'} VNĐ
+                {displayPrice}
               </div>
 
               {/* Variants */}
@@ -173,6 +182,15 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {(!product.variants || product.variants.length === 0) && product.emptyInventoryMessage && (
+                <div>
+                  <h3 className="text-xs font-bold text-gray-600 mb-3 uppercase tracking-wide">Sản phẩm</h3>
+                  <p className="inline-flex rounded bg-[#2f9e44] px-3 py-2 text-sm font-medium text-white">
+                    {product.emptyInventoryMessage}
+                  </p>
                 </div>
               )}
 
@@ -224,9 +242,12 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
                 <button className="min-w-[140px] flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded text-sm font-medium transition-colors">
                   Đặt trước
                 </button>
-                <button className="px-6 py-3 border-2 border-green-500 text-green-600 rounded text-sm hover:bg-green-50 transition-colors font-medium">
+                <Link
+                  href="/chat-box"
+                  className="px-6 py-3 border-2 border-green-500 text-green-600 rounded text-sm hover:bg-green-50 transition-colors font-medium"
+                >
                   Nhắn tin
-                </button>
+                </Link>
                 <button className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-sm hover:bg-green-600 transition-colors">
                   <i className="fas fa-handshake text-white text-sm"></i>
                 </button>
@@ -531,3 +552,4 @@ export default function ProductDetail({ product, reviews }: { product: Product; 
     </div>
   )
 }
+

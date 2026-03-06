@@ -1,4 +1,4 @@
-# generated: 2026-03-05
+# generated: 2026-03-06
 # project: taphoammo
 # project_key: NOKEY
 # tracking_system: file-system
@@ -33,20 +33,38 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-03-05
+generated: 2026-03-06
 project: taphoammo
 project_key: NOKEY
 tracking_system: file-system
 story_location: docs/implementation-artifacts
 
 development_status:
+  # Epic 1: API Foundation & Data Infrastructure
   epic-1: in-progress
-  1-1-database-schema-user-model-setup: done
-  1-2-user-registration-with-email-password: in-progress
-  1-3-cloudflare-turnstile-integration: done
-  1-4-user-login-with-email-password: done
-  1-5-remember-login-feature: review
-  1-6-google-oauth-integration: review
-  1-7-registration-success-toast-notification: done
-  1-8-login-register-page-ui-layout: done
+  1-1-create-typescript-type-definitions-for-listing-apis: review
+  1-2-create-api-service-layer-for-listing-endpoints: review
+  1-3-create-route-to-endpoint-mapping-utility: review
+  1-4-create-format-utilities-for-vietnamese-currency-and-numbers: review
   epic-1-retrospective: optional
+  
+  # Epic 2: Single Route Integration (Email Products)
+  epic-2: in-progress
+  2-1-integrate-email-listing-page-with-backend-api: review
+  2-2-connect-sidebar-filter-with-dynamic-subtype-counts: review
+  2-3-implement-sort-tabs-with-api-integration: review
+  2-4-connect-pagination-to-api-meta-data: review
+  2-5-implement-favorite-toggle-with-authentication: review
+  2-6-add-loading-empty-and-error-states: review
+  epic-2-retrospective: optional
+  
+  # Epic 3: Complete Listing Coverage
+  epic-3: in-progress
+  3-1-integrate-remaining-7-listing-routes: review
+  epic-3-retrospective: optional
+  
+  # Epic 4: Product Detail Pages
+  epic-4: in-progress
+  4-1-update-product-card-links-to-use-slugs: review
+  4-2-implement-slug-based-product-detail-page: review
+  epic-4-retrospective: optional

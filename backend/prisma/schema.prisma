@@ -36,6 +36,74 @@ enum ProductType {
   OTHER
 }
 
+// New enums for listing system
+enum ListingKind {
+  PRODUCT
+  SERVICE
+}
+
+enum ListingCategory {
+  // Product categories
+  EMAIL
+  PRODUCT_SOFTWARE
+  ACCOUNT
+  PRODUCT_OTHER
+  
+  // Service categories
+  ENGAGEMENT
+  SERVICE_SOFTWARE
+  BLOCKCHAIN
+  SERVICE_OTHER
+}
+
+enum ProductSubType {
+  // Email subtypes
+  GMAIL
+  HOTMAIL
+  OUTLOOKMAIL
+  IUUMAIL
+  DOMAINMAIL
+  YAHOOMAIL
+  PROTONMAIL
+  OTHER_MAIL
+  
+  // Software subtypes (extensible)
+  WINDOWS_SOFTWARE
+  MAC_SOFTWARE
+  MOBILE_APP
+  WEB_APP
+  OTHER_SOFTWARE
+  
+  // Account subtypes (extensible)
+  SOCIAL_ACCOUNT
+  GAMING_ACCOUNT
+  STREAMING_ACCOUNT
+  OTHER_ACCOUNT
+  
+  // Service subtypes (extensible)
+  FACEBOOK_ENGAGEMENT
+  INSTAGRAM_ENGAGEMENT
+  TIKTOK_ENGAGEMENT
+  YOUTUBE_ENGAGEMENT
+  OTHER_ENGAGEMENT
+  
+  BLOCKCHAIN_DEV
+  SMART_CONTRACT
+  NFT_SERVICE
+  OTHER_BLOCKCHAIN
+  
+  CUSTOM_SOFTWARE_DEV
+  API_INTEGRATION
+  OTHER_SERVICE_SOFTWARE
+  
+  GENERAL_OTHER
+}
+
+enum ConversationType {
+  DIRECT
+  SUPPORT
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -44,7 +112,7 @@ model User {
   googleId      String?   @unique
   fullName      String?
   phone         String?
-  balance       Float     @default(0)
+  balance       Decimal   @default(0) @db.Decimal(12, 2)
   role          UserRole  @default(USER)
   isActive      Boolean   @default(true)
   twoFactorEnabled Boolean @default(false)
@@ -58,6 +126,9 @@ model User {
   orders        Order[]
   purchases     Purchase[]
   transactions  Transaction[]
+  favorites     ProductFavorite[]
+  conversationParticipants ConversationParticipant[]
+  sentMessages  ChatMessage[] @relation("ChatMessageSender")
   
   @@index([email])
   @@index([username])
@@ -90,14 +161,36 @@ model Product {
   shopId        String
   name          String
   description   String
-  type          ProductType
+  type          ProductType // Keep for backward compatibility
+  
+  // New listing system fields
+  slug          String?     @unique
+  kind          ListingKind?
+  category      ListingCategory?
+  subType       ProductSubType?
+  shortDescription String?
+  badgeText     String?
+  
+  // Pricing (keep old price for backward compatibility)
   price         Float
+  
+  // Stats and metrics
   stock         Int         @default(0)
   sold          Int         @default(0)
+  ratingAvg     Decimal?    @db.Decimal(3, 2)
+  reviewCount   Int         @default(0)
+  completedOrders Int       @default(0)
+  complaintPercent Decimal  @default(0) @db.Decimal(5, 2)
+  
   images        String[]
   isActive      Boolean     @default(true)
   autoDeliver   Boolean     @default(false)
-  
+
+  // Private warehouse (external API inventory)
+  usePrivateWarehouse Boolean  @default(false)
+  warehouseApiUrl     String?
+  warehouseApiKey     String?
+
   // Metadata for different product types
   metadata      Json?
   
@@ -109,10 +202,15 @@ model Product {
   orderItems    OrderItem[]
   purchases     Purchase[]
   inventory     Inventory[]
+  features      ProductFeature[]
+  priceOptions  ProductPriceOption[]
+  favorites     ProductFavorite[]
   
   @@index([shopId])
   @@index([type])
   @@index([isActive])
+  @@index([kind, category, subType])
+  @@index([slug])
 }
 
 model Inventory {
@@ -134,7 +232,7 @@ model Order {
   id            String        @id @default(cuid())
   userId        String
   orderNumber   String        @unique
-  totalAmount   Float
+  totalAmount   Decimal       @db.Decimal(12, 2)
   status        OrderStatus   @default(PENDING)
   paymentStatus PaymentStatus @default(PENDING)
   
@@ -156,7 +254,7 @@ model OrderItem {
   orderId       String
   productId     String
   quantity      Int
-  price         Float
+  price         Decimal   @db.Decimal(12, 2)
   deliveredData String?   // Data delivered to customer
   
   createdAt     DateTime  @default(now())
@@ -172,7 +270,7 @@ model OrderItem {
 model Payment {
   id            String        @id @default(cuid())
   orderId       String        @unique
-  amount        Float
+  amount        Decimal       @db.Decimal(12, 2)
   method        String        // BANK_TRANSFER, MOMO, ZALOPAY, etc.
   status        PaymentStatus @default(PENDING)
   transactionId String?
@@ -209,11 +307,11 @@ model Purchase {
 model Transaction {
   id            String    @id @default(cuid())
   userId        String
-  amount        Float
+  amount        Decimal   @db.Decimal(12, 2)
   type          String    // DEPOSIT, WITHDRAW, PURCHASE, REFUND
   description   String?
-  balanceBefore Float
-  balanceAfter  Float
+  balanceBefore Decimal   @db.Decimal(12, 2)
+  balanceAfter  Decimal   @db.Decimal(12, 2)
   
   createdAt     DateTime  @default(now())
   
@@ -222,4 +320,95 @@ model Transaction {
   
   @@index([userId])
   @@index([type])
+}
+
+// New tables for listing system
+
+model ProductFeature {
+  id          String   @id @default(cuid())
+  productId   String
+  content     String
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([productId])
+}
+
+model ProductPriceOption {
+  id          String   @id @default(cuid())
+  productId   String
+  label       String
+  price       Decimal  @db.Decimal(12, 2)
+  stock       Int      @default(0)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([productId, isActive])
+}
+
+model ProductFavorite {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Conversation {
+  id            String                    @id @default(cuid())
+  type          ConversationType          @default(DIRECT)
+  title         String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  participants  ConversationParticipant[]
+  messages      ChatMessage[]
+
+  @@index([updatedAt])
+}
+
+model ConversationParticipant {
+  id              String        @id @default(cuid())
+  conversationId  String
+  userId          String
+  lastReadAt      DateTime?
+  createdAt       DateTime      @default(now())
+
+  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model ChatMessage {
+  id              String        @id @default(cuid())
+  conversationId  String
+  senderId        String
+  content         String
+  createdAt       DateTime      @default(now())
+
+  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender          User          @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
 }

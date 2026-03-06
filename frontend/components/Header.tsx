@@ -7,6 +7,7 @@ import LoginPopup from './LoginPopup'
 import UserMenu from './UserMenu'
 import { DropdownMenu, NotificationBadge } from './ui'
 import { useAuth } from '@/hooks/useAuth'
+import { API_ENDPOINTS } from '@/lib/api'
 
 export default function Header() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export default function Header() {
   const [showLoginPopup, setShowLoginPopup] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [unreadChatCount, setUnreadChatCount] = useState(0)
   const [openMobileGroups, setOpenMobileGroups] = useState<Record<string, boolean>>({
     product: false,
     service: false,
@@ -32,6 +34,61 @@ export default function Header() {
       document.body.style.overflow = ''
     }
   }, [isMobileMenuOpen])
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setUnreadChatCount(0)
+      return
+    }
+
+    let isMounted = true
+    const fetchUnreadChatCount = async () => {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        if (isMounted) {
+          setUnreadChatCount(0)
+        }
+        return
+      }
+
+      try {
+        const response = await fetch(API_ENDPOINTS.CHAT.CONVERSATIONS, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: 'no-store',
+        })
+
+        if (!response.ok) {
+          return
+        }
+
+        const conversations = (await response.json()) as Array<{ unreadCount?: number }>
+        const unreadTotal = conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
+        if (isMounted) {
+          setUnreadChatCount(unreadTotal)
+        }
+      } catch {
+        // Keep previous value when transient fetch fails.
+      }
+    }
+
+    void fetchUnreadChatCount()
+    const intervalId = window.setInterval(() => {
+      void fetchUnreadChatCount()
+    }, 10000)
+
+    const handleWindowFocus = () => {
+      void fetchUnreadChatCount()
+    }
+    window.addEventListener('focus', handleWindowFocus)
+
+    return () => {
+      isMounted = false
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handleWindowFocus)
+    }
+  }, [isLoggedIn])
 
   const handleUserIconClick = () => {
     const isMobile = window.innerWidth < 640
@@ -125,7 +182,7 @@ export default function Header() {
               {isLoggedIn && (
                 <Link href="/chat-box" className="relative cursor-pointer hover:opacity-80 transition-opacity leading-none" aria-label="Tin nhắn">
                   <i className="far fa-comment-dots text-[20px] sm:text-[18px]"></i>
-                  <NotificationBadge count={0} />
+                  <NotificationBadge count={unreadChatCount} />
                 </Link>
               )}
               <button
@@ -158,7 +215,14 @@ export default function Header() {
       <div className="bg-white border-b border-gray-200 h-6 sm:h-[30px] overflow-hidden sticky top-[44px] sm:top-[60px] z-[99]">
         <div className="whitespace-nowrap pl-full animate-marquee">
           <span className="text-red-500 text-[11px] sm:text-[13px] font-medium">
-            Tạp Hóa MMO - Sàn thương mại điện tử sản phẩm số phục vụ Kiếm tiền online. Mọi giao dịch trên trang đều hoàn toàn tự động và được giữ tiền 3 ngày, thay thế cho hình thức trung gian, các
+            Tạp Hóa MMO - Sàn thương mại điện tử sản phẩm số phục
+									vụ Kiếm tiền online. Mọi giao dịch trên trang đều hoàn toàn tự động và được giữ tiền
+									3 ngày, thay thế cho hình thức trung gian, các bạn yên tâm giao dịch nhé. (2) Cảnh
+									báo gian hàng không uy tín: Nếu chủ shop bán cho bạn sản phẩm không đúng định dạng:
+									tài-khoản|mật-khẩu..., mà là 1 chuỗi không liên quan ở đầu, có nghĩa là hàng đó đang
+									cố pass hệ thống check trùng của sàn, hãy nhanh chóng khiếu nại đơn hàng và báo cho
+									bên mình nhé, vì sản phẩm bạn mua có thể đã từng bán cho người khác trên sàn.
+								
           </span>
         </div>
       </div>

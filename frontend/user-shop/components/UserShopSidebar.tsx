@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { UserShopSection } from '../types'
 
 interface SidebarItem {
@@ -9,7 +10,6 @@ interface SidebarItem {
 
 interface UserShopSidebarProps {
   activeSection: UserShopSection
-  onChangeSection: (section: UserShopSection) => void
 }
 
 const menuGroups: Array<{ title: string; items: SidebarItem[] }> = [
@@ -33,15 +33,15 @@ const menuGroups: Array<{ title: string; items: SidebarItem[] }> = [
   },
 ]
 
-export default function UserShopSidebar({ activeSection, onChangeSection }: UserShopSidebarProps) {
+export default function UserShopSidebar({ activeSection }: UserShopSidebarProps) {
   return (
     <aside className="w-full md:w-[260px] bg-[#0f2346] text-[#d8e3f7] shadow-xl md:min-h-screen">
-      <div className="flex h-[74px] items-center gap-3 border-b border-white/10 px-5">
+      <Link href="/" className="flex h-[74px] items-center gap-3 border-b border-white/10 px-5 transition-opacity hover:opacity-80">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#5f70f8] font-bold text-white">
           M
         </div>
         <p className="text-[18px] leading-none font-semibold text-white">taphoammo.net</p>
-      </div>
+      </Link>
 
       <div className="space-y-6 py-4">
         {menuGroups.map((group) => (
@@ -50,18 +50,24 @@ export default function UserShopSidebar({ activeSection, onChangeSection }: User
             <ul>
               {group.items.map((item) => (
                 <li key={item.id}>
-                  <button
-                    type="button"
-                    onClick={() => item.section && onChangeSection(item.section)}
-                    className={`flex w-full items-center gap-3 px-5 py-2.5 text-left text-sm transition-colors ${
-                      item.section === activeSection
-                        ? 'bg-[#1c355f] text-white'
-                        : 'text-[#d8e3f7] hover:bg-[#173058]'
-                    }`}
-                  >
-                    <i className={`${item.icon} w-4 text-center`} aria-hidden="true" />
-                    <span>{item.label}</span>
-                  </button>
+                  {item.section ? (
+                    <Link
+                      href={`/quan-ly-cua-hang?tab=${item.section}`}
+                      className={`flex w-full items-center gap-3 px-5 py-2.5 text-left text-sm transition-colors ${
+                        item.section === activeSection
+                          ? 'bg-[#1c355f] text-white'
+                          : 'text-[#d8e3f7] hover:bg-[#173058]'
+                      }`}
+                    >
+                      <i className={`${item.icon} w-4 text-center`} aria-hidden="true" />
+                      <span>{item.label}</span>
+                    </Link>
+                  ) : (
+                    <div className="flex w-full items-center gap-3 px-5 py-2.5 text-left text-sm text-[#d8e3f7]/70">
+                      <i className={`${item.icon} w-4 text-center`} aria-hidden="true" />
+                      <span>{item.label}</span>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -71,4 +77,3 @@ export default function UserShopSidebar({ activeSection, onChangeSection }: User
     </aside>
   )
 }
-

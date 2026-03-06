@@ -9,6 +9,16 @@ interface UserMenuProps {
   onLogout: () => void
 }
 
+const menuItems = [
+  { href: '/thong-tin-tai-khoan', label: 'Thông tin tài khoản' },
+  { href: '/don-hang', label: 'Đơn hàng đã mua' },
+  { href: '/gian-hang-yeu-thich', label: 'Gian hàng yêu thích' },
+  { href: '/lich-su-thanh-toan', label: 'Lịch sử thanh toán' },
+  { href: '/reseller', label: 'Reseller' },
+  { href: '/quan-ly-noi-dung', label: 'Quản lý nội dung' },
+  { href: '/doi-mat-khau', label: 'Đổi mật khẩu' },
+]
+
 export default function UserMenu({ isOpen, onClose, onLogout }: UserMenuProps) {
   const { user } = useAuth()
 
@@ -18,20 +28,20 @@ export default function UserMenu({ isOpen, onClose, onLogout }: UserMenuProps) {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/20 z-[200]"
+        className="fixed inset-0 bg-black/20 z-[200] animate-fadeIn"
         onClick={onClose}
       />
 
       {/* Menu Popup */}
-      <div className="fixed top-[100px] right-8 w-full max-w-[280px] bg-white rounded shadow-lg z-[201]">
+      <div className="fixed top-[100px] right-8 w-full max-w-[280px] bg-white rounded shadow-lg z-[201] animate-slideDown">
         {/* User Info Header */}
         <div className="bg-gray-50 p-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
+            <img 
+              src="https://mimity-admin896.netlify.app/dist/img/user.svg" 
+              alt={user?.username || 'User'} 
+              className="w-12 h-12 rounded-full object-cover"
+            />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-800 truncate">{user?.username || 'User'}</p>
               <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
@@ -40,59 +50,24 @@ export default function UserMenu({ isOpen, onClose, onLogout }: UserMenuProps) {
         </div>
 
         {/* Menu Items */}
-        <div className="py-2">
-          <Link
-            href="/thong-tin-tai-khoan"
-            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={onClose}
-          >
-            Thông tin tài khoản
-          </Link>
-          <Link
-            href="/don-hang"
-            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={onClose}
-          >
-            Đơn hàng đã mua
-          </Link>
-          <Link
-            href="/gian-hang-yeu-thich"
-            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={onClose}
-          >
-            Gian hàng yêu thích
-          </Link>
-          <Link
-            href="/lich-su-thanh-toan"
-            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={onClose}
-          >
-            Lịch sử thanh toán
-          </Link>
-          <Link
-            href="/reseller"
-            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={onClose}
-          >
-            Reseller
-          </Link>
-          <Link
-            href="/quan-ly-noi-dung"
-            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={onClose}
-          >
-            Quản lý nội dung
-          </Link>
-          <Link
-            href="/doi-mat-khau"
-            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={onClose}
-          >
-            Đổi mật khẩu
-          </Link>
+        <div className="py-0.5">
+          {menuItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="block px-4 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+              onClick={onClose}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Shop Management - Separated */}
+        <div className="border-t border-b border-gray-200 py-0.5">
           <Link
             href="/quan-ly-cua-hang"
-            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="block px-4 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
             onClick={onClose}
           >
             Quản lý cửa hàng
@@ -100,13 +75,13 @@ export default function UserMenu({ isOpen, onClose, onLogout }: UserMenuProps) {
         </div>
 
         {/* Logout Button */}
-        <div className="border-t border-gray-200 p-2">
+        <div className="py-0.5">
           <button
             onClick={() => {
               onLogout()
               onClose()
             }}
-            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full text-left px-4 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
           >
             Thoát
           </button>

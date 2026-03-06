@@ -11,11 +11,7 @@ import { CacheService } from './cache.service';
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         store: await redisStore({
-          socket: {
-            host: config.get('REDIS_HOST') || 'localhost',
-            port: config.get('REDIS_PORT') || 6379,
-          },
-          password: config.get('REDIS_PASSWORD'),
+          url: config.get('REDIS_URL') || 'redis://localhost:6379',
           ttl: 60 * 1000, // 1 minute default
         }),
       }),

@@ -1,10 +1,10 @@
 import { CategoryCard } from './ui'
 
 const services = [
-  { name: 'Tăng tương tác', icon: 'fas fa-chart-line', desc: 'Tăng like, view share, comment... cho sản phẩm của bạn', href: '/dich-vu/tang-tuong-tac' },
-  { name: 'Dịch vụ phần mềm', icon: 'fas fa-tools', desc: 'Dịch vụ code tool MMO, dò hoa, video... và các dịch vụ liên quan', href: '/dich-vu/phan-mem' },
-  { name: 'Blockchain', icon: 'fas fa-link', desc: 'Dịch vụ tiền ảo, NFT, coinlist... và các dịch vụ blockchain khác', href: '/dich-vu/blockchain' },
-  { name: 'Dịch vụ khác', icon: 'fas fa-handshake', desc: 'Các dịch vụ MMO phổ biến khác hiện nay', href: '/dich-vu/khac' },
+  { name: 'Tăng tương tác', image: '/images/services/interaction-service.png', desc: 'Tăng like, view share, comment... cho sản phẩm của bạn', href: '/dich-vu/tang-tuong-tac' },
+  { name: 'Dịch vụ phần mềm', image: '/images/services/software-service.png', desc: 'Dịch vụ code tool MMO, dò hoa, video... và các dịch vụ liên quan', href: '/dich-vu/phan-mem' },
+  { name: 'Blockchain', image: '/images/services/blockchain-service.png', desc: 'Dịch vụ tiền ảo, NFT, coinlist... và các dịch vụ blockchain khác', href: '/dich-vu/blockchain' },
+  { name: 'Dịch vụ khác', image: '/images/services/other-service.png', desc: 'Các dịch vụ MMO phổ biến khác hiện nay', href: '/dich-vu/khac' },
 ]
 
 export default function ServiceSection() {
@@ -18,7 +18,7 @@ export default function ServiceSection() {
           <CategoryCard
             key={service.name}
             name={service.name}
-            icon={service.icon}
+            image={service.image}
             description={service.desc}
             href={service.href}
           />

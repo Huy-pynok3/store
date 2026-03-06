@@ -16,4 +16,13 @@ export interface ShopListing {
   stock: number
   createdAt: string
   status: string
+  shopType?: 'Sản phẩm' | 'Dịch vụ'
+}
+
+export interface InventoryItem {
+  id: string
+  name: string
+  price: number
+  status: 'active' | 'inactive'
+  stock: number
 }

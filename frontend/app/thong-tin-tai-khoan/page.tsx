@@ -1,18 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { PageContainer, Card, Avatar, Button, InfoRow, Badge } from '@/components/ui'
+import { useAuth } from '@/hooks/useAuth'
 
-// Disable static generation for this page
-export const dynamic = 'force-dynamic'
+function formatBalance(balance: number | string | undefined): string {
+  if (balance === undefined || balance === null) return '0 VNĐ'
+  const num = typeof balance === 'string' ? parseFloat(balance) : balance
+  if (isNaN(num)) return '0 VNĐ'
+  return num.toLocaleString('vi-VN') + ' VNĐ'
+}
+
+function formatDate(dateStr: string | undefined): string {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
 
 export default function AccountInfoPage() {
-  const [userData] = useState({
-    username: '@test',
-    firstName: 'Chưa đặt tên',
-    balance: '0 VNĐ',
-    registrationDate: '12/06/2024',
+  const { user, loading, isLoggedIn } = useAuth()
+  const router = useRouter()
+
+  // Mock data cho các field chưa có API
+  const mockData = {
     totalPurchases: '0 sản phẩm',
     totalOrders: '0 gian hàng',
     totalSold: '0 sản phẩm',
@@ -23,7 +35,28 @@ export default function AccountInfoPage() {
     loginHistory: [
       { date: '12-06-2024 19:27', ip: 'IP: 103.89.89.195', device: 'Device: Chrome 125 On Windows' }
     ]
-  })
+  }
+
+  useEffect(() => {
+    if (!loading && !isLoggedIn) {
+      router.push('/')
+    }
+  }, [loading, isLoggedIn, router])
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="md">
+        <div className="flex items-center justify-center py-20 text-[#808080]">Đang tải...</div>
+      </PageContainer>
+    )
+  }
+
+  if (!user) return null
+
+  const displayUsername = user.username ? `@${user.username}` : '—'
+  const displayName = (user as any).fullName || 'Chưa đặt tên'
+  const displayBalance = formatBalance((user as any).balance)
+  const displayDate = formatDate((user as any).createdAt)
 
   return (
     <PageContainer maxWidth="md">
@@ -51,53 +84,53 @@ export default function AccountInfoPage() {
             <div className="px-5 py-2">
               <table className="w-full text-[14px]">
                 <tbody>
-                  <InfoRow label="Tài khoản" value={userData.username} />
-                  <InfoRow label="Họ tên" value={userData.firstName} />
-                  <InfoRow label="Số dư" value={userData.balance} />
-                  <InfoRow label="Ngày đăng ký" value={userData.registrationDate} />
-                  <InfoRow label="Đã mua" value={userData.totalPurchases} />
-                  <InfoRow label="Số gian hàng" value={userData.totalOrders} />
-                  <InfoRow label="Đã bán" value={userData.totalSold} />
-                  <InfoRow 
-                    label="Số bài viết" 
-                    value={<Link href="#" className="text-[#2f9d59] hover:underline">{userData.totalPosts}</Link>} 
+                  <InfoRow label="Tài khoản" value={displayUsername} />
+                  <InfoRow label="Họ tên" value={displayName} />
+                  <InfoRow label="Số dư" value={displayBalance} />
+                  <InfoRow label="Ngày đăng ký" value={displayDate} />
+                  <InfoRow label="Đã mua" value={mockData.totalPurchases} />
+                  <InfoRow label="Số gian hàng" value={mockData.totalOrders} />
+                  <InfoRow label="Đã bán" value={mockData.totalSold} />
+                  <InfoRow
+                    label="Số bài viết"
+                    value={<Link href="#" className="text-[#2f9d59] hover:underline">{mockData.totalPosts}</Link>}
                   />
-                  <InfoRow 
-                    label="Mua hàng bằng API" 
+                  <InfoRow
+                    label="Mua hàng bằng API"
                     value={
                       <button className="inline-flex items-center gap-1 text-[#c94444] hover:underline">
                         <span aria-hidden>✖</span>
-                        {userData.apiKey}
+                        {mockData.apiKey}
                       </button>
-                    } 
+                    }
                   />
-                  <InfoRow 
-                    label="Bảo mật 2 lớp" 
+                  <InfoRow
+                    label="Bảo mật 2 lớp"
                     value={
                       <div className="flex flex-col gap-1">
                         <button className="inline-flex w-fit items-center gap-1 text-[#c94444] hover:underline">
                           <span aria-hidden>✖</span>
-                          {userData.twoFactorEnabled ? 'Đã bật' : 'Chưa bật'}
+                          {mockData.twoFactorEnabled ? 'Đã bật' : 'Chưa bật'}
                         </button>
                         <p className="text-[12px] text-[#2d9f5d]">
                           (Hãy bảo vệ tài khoản của bạn bằng bảo mật 2FA)
                         </p>
                       </div>
-                    } 
+                    }
                   />
-                  <InfoRow 
-                    label="Kết nối Telegram" 
+                  <InfoRow
+                    label="Kết nối Telegram"
                     value={
                       <div className="flex flex-col gap-1">
                         <button className="inline-flex w-fit items-center gap-1 text-[#c94444] hover:underline">
                           <span aria-hidden>✖</span>
-                          {userData.telegramConnected ? 'Đã kết nối' : 'Chưa kết nối'}
+                          {mockData.telegramConnected ? 'Đã kết nối' : 'Chưa kết nối'}
                         </button>
                         <p className="text-[12px] text-[#2d9f5d]">
                           (Bạn có thể gỡ và nhận được tin nhắn mới qua Telegram nếu có kết nối)
                         </p>
                       </div>
-                    } 
+                    }
                     className="border-b-0"
                   />
                 </tbody>
@@ -116,7 +149,7 @@ export default function AccountInfoPage() {
               <Avatar size="xl" />
             </div>
             <h2 className="text-center text-[34px] font-semibold leading-none tracking-tight text-[#4c4c4c]">
-              {userData.username}
+              {displayUsername}
             </h2>
             <p className="mt-2 text-center text-[12px] text-[#3ea64d]">Online</p>
           </Card>
@@ -125,7 +158,7 @@ export default function AccountInfoPage() {
             <h3 className="border-b border-[#efefef] py-2 text-center text-[15px] text-[#505050]">Lịch sử đăng nhập</h3>
             <div className="h-[220px] overflow-y-auto p-4">
               <div className="mb-2 text-center text-[#808080]">...</div>
-              {userData.loginHistory.map((login, index) => (
+              {mockData.loginHistory.map((login, index) => (
                 <div key={index} className="text-[12px]">
                   <div className="mb-1 flex items-center gap-1.5">
                     <Badge variant="warning" size="xs">{login.date}</Badge>

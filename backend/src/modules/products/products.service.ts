@@ -3,6 +3,7 @@ import { PrismaService } from '@/database/prisma.service';
 import { CacheService } from '@/cache/cache.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { UpdateWarehouseConfigDto } from './dto/update-warehouse-config.dto';
 
 @Injectable()
 export class ProductsService {
@@ -173,5 +174,58 @@ export class ProductsService {
     await this.cacheService.invalidateProduct(productId);
 
     return updated;
+  }
+
+  async getWarehouseConfig(productId: string, userId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { shop: true },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (product.shop.userId !== userId) {
+      throw new ForbiddenException('You can only access your own products');
+    }
+
+    return {
+      usePrivateWarehouse: product.usePrivateWarehouse,
+      warehouseApiUrl: product.warehouseApiUrl,
+      warehouseApiKey: product.warehouseApiKey,
+    };
+  }
+
+  async updateWarehouseConfig(productId: string, userId: string, dto: UpdateWarehouseConfigDto) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { shop: true },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (product.shop.userId !== userId) {
+      throw new ForbiddenException('You can only update your own products');
+    }
+
+    const updated = await this.prisma.product.update({
+      where: { id: productId },
+      data: {
+        usePrivateWarehouse: dto.usePrivateWarehouse,
+        warehouseApiUrl: dto.usePrivateWarehouse ? dto.warehouseApiUrl : null,
+        warehouseApiKey: dto.usePrivateWarehouse ? dto.warehouseApiKey : null,
+      },
+    });
+
+    await this.cacheService.invalidateProduct(productId);
+
+    return {
+      usePrivateWarehouse: updated.usePrivateWarehouse,
+      warehouseApiUrl: updated.warehouseApiUrl,
+      warehouseApiKey: updated.warehouseApiKey,
+    };
   }
 }

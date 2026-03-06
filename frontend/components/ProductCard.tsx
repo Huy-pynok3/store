@@ -3,6 +3,7 @@ import { StarRating, ProductBadge } from './ui'
 
 interface Product {
   id: number
+  slug: string
   badge: string
   stock: number
   name: string
@@ -16,9 +17,16 @@ interface Product {
   features?: string[]
   priceRange: string
   image?: string
+  isFavorite?: boolean
 }
 
-export default function ProductCard({ product, featured = false }: { product: Product; featured?: boolean }) {
+interface ProductCardProps {
+  product: Product
+  featured?: boolean
+  onFavoriteToggle?: (productId: number) => void
+}
+
+export default function ProductCard({ product, featured = false, onFavoriteToggle }: ProductCardProps) {
   if (featured) {
     return (
       <div className="bg-white border border-gray-200 rounded-sm overflow-hidden hover:shadow-md transition-shadow relative">
@@ -55,7 +63,7 @@ export default function ProductCard({ product, featured = false }: { product: Pr
             {/* Badge and Product Name on same line */}
             <div className="mb-2 sm:mb-3 min-w-0">
               <ProductBadge type="product" size="xs" className="align-middle mr-2" />
-              <Link href={`/san-pham/${product.id}`} className="inline">
+              <Link href={`/san-pham/${product.slug}`} className="inline">
                 <h3 className="inline text-base sm:text-xl font-bold text-gray-800 hover:text-primary leading-tight">
                   {product.name}
                 </h3>
@@ -99,8 +107,19 @@ export default function ProductCard({ product, featured = false }: { product: Pr
           </div>
 
           {/* Heart Icon - Top Right */}
-          <button className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-300 hover:text-red-500 transition-colors">
-            <i className="far fa-heart text-lg sm:text-2xl"></i>
+          <button 
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onFavoriteToggle?.(product.id)
+            }}
+            className={`absolute top-3 right-3 sm:top-4 sm:right-4 transition-colors ${
+              product.isFavorite 
+                ? 'text-red-500 hover:text-red-600' 
+                : 'text-gray-300 hover:text-red-500'
+            }`}
+          >
+            <i className={`${product.isFavorite ? 'fas' : 'far'} fa-heart text-lg sm:text-2xl`}></i>
           </button>
 
           {/* Partner/Reseller Icon - Bottom Right */}
@@ -149,7 +168,7 @@ export default function ProductCard({ product, featured = false }: { product: Pr
           {/* Badge and Product Name on same line */}
           <div className="mb-2 min-w-0">
             <ProductBadge type="product" className="align-middle mr-2" />
-            <Link href={`/san-pham/${product.id}`} className="inline">
+            <Link href={`/san-pham/${product.slug}`} className="inline">
               <h3 className="inline text-sm sm:text-base font-semibold text-gray-800 hover:text-primary leading-tight">
                 {product.name}
               </h3>
@@ -193,8 +212,19 @@ export default function ProductCard({ product, featured = false }: { product: Pr
         </div>
 
         {/* Heart Icon - Top Right */}
-        <button className="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition-colors">
-          <i className="far fa-heart text-lg sm:text-xl"></i>
+        <button 
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onFavoriteToggle?.(product.id)
+          }}
+          className={`absolute top-3 right-3 transition-colors ${
+            product.isFavorite 
+              ? 'text-red-500 hover:text-red-600' 
+              : 'text-gray-300 hover:text-red-500'
+          }`}
+        >
+          <i className={`${product.isFavorite ? 'fas' : 'far'} fa-heart text-lg sm:text-xl`}></i>
         </button>
 
         {/* Partner/Reseller Icon - Bottom Right */}

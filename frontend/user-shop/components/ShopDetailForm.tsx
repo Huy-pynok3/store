@@ -7,38 +7,151 @@ import { ShopListing } from '../types'
 interface ShopDetailFormProps {
   item: ShopListing
   onBack: () => void
+  onInventory: () => void
+  onSubmitSuccess: (shopData: Partial<ShopListing>) => void
 }
 
-export default function ShopDetailForm({ item, onBack }: ShopDetailFormProps) {
+export default function ShopDetailForm({ item, onBack, onInventory, onSubmitSuccess }: ShopDetailFormProps) {
+  const isCreateMode = item.id === 'new-shop'
   const [shopName, setShopName] = useState(item.name)
-  const [shopType, setShopType] = useState('Tài khoản')
-  const [productType, setProductType] = useState('Tài khoản FB (2%)')
+  const [shopType, setShopType] = useState<'product' | 'service' | ''>('')
+  const [shopCategory, setShopCategory] = useState('')
+  const [productType, setProductType] = useState('')
   const [refundRate, setRefundRate] = useState('0.0')
   const [status, setStatus] = useState(item.status)
   const [allowReseller, setAllowReseller] = useState(item.resellerEnabled)
-  const [uniqueProduct, setUniqueProduct] = useState(true)
+  const [uniqueProduct] = useState(true)
   const [usePrivateWarehouse, setUsePrivateWarehouse] = useState(false)
   const [shortDescription, setShortDescription] = useState(item.name)
   const [detailDescription, setDetailDescription] = useState(
     '<p>- Số ngày tạo: tầm 1-3 tháng</p><p>- Việt, Name random</p><p>- Định dạng xuất: UID | Pass | 2FA | Email | Pass Mail</p><p><strong>Vui lòng mua ít để dùng và kiểm tra chất lượng.</strong></p>'
   )
 
-  const formTitle = useMemo(() => 'Chi tiết gian hàng', [])
+  const formTitle = useMemo(() => (isCreateMode ? 'Thêm gian hàng' : 'Chi tiết gian hàng'), [isCreateMode])
+  const submitLabel = isCreateMode ? 'Tạo gian hàng' : 'Cập nhật'
+
+  // Category options based on shop type
+  const categoryOptions = useMemo(() => {
+    if (shopType === 'product') {
+      return [
+        { value: 'email', label: 'Email' },
+        { value: 'product_software', label: 'Phần mềm' },
+        { value: 'account', label: 'Tài khoản' },
+        { value: 'product_other', label: 'Khác' }
+      ]
+    } else if (shopType === 'service') {
+      return [
+        { value: 'engagement', label: 'Tương tác' },
+        { value: 'service_software', label: 'Phần mềm' },
+        { value: 'blockchain', label: 'Blockchain' },
+        { value: 'service_other', label: 'Khác' }
+      ]
+    }
+    return []
+  }, [shopType])
+
+  // Product type options based on category
+  const productTypeOptions = useMemo(() => {
+    switch (shopCategory) {
+      case 'email':
+        return [
+          { value: 'gmail', label: 'Gmail (2%)' },
+          { value: 'hotmail', label: 'Hotmail (2%)' },
+          { value: 'outlookmail', label: 'Outlook Mail (2%)' },
+          { value: 'iuumail', label: 'Iuu Mail (2%)' },
+          { value: 'domainmail', label: 'Domain Mail (2%)' },
+          { value: 'yahoomail', label: 'Yahoo Mail (2%)' },
+          { value: 'protonmail', label: 'Proton Mail (2%)' },
+          { value: 'other_mail', label: 'Email khác (2%)' }
+        ]
+      case 'product_software':
+        return [
+          { value: 'windows_software', label: 'Phần mềm Windows (3%)' },
+          { value: 'mac_software', label: 'Phần mềm Mac (3%)' },
+          { value: 'mobile_app', label: 'Ứng dụng Mobile (3%)' },
+          { value: 'web_app', label: 'Ứng dụng Web (3%)' },
+          { value: 'other_software', label: 'Phần mềm khác (3%)' }
+        ]
+      case 'account':
+        return [
+          { value: 'social_account', label: 'Tài khoản mạng xã hội (2%)' },
+          { value: 'gaming_account', label: 'Tài khoản game (2%)' },
+          { value: 'streaming_account', label: 'Tài khoản streaming (2%)' },
+          { value: 'other_account', label: 'Tài khoản khác (2%)' }
+        ]
+      case 'product_other':
+        return [
+          { value: 'general_other', label: 'Sản phẩm khác (2%)' }
+        ]
+      case 'engagement':
+        return [
+          { value: 'facebook_engagement', label: 'Tương tác Facebook (5%)' },
+          { value: 'instagram_engagement', label: 'Tương tác Instagram (5%)' },
+          { value: 'tiktok_engagement', label: 'Tương tác TikTok (5%)' },
+          { value: 'youtube_engagement', label: 'Tương tác YouTube (5%)' },
+          { value: 'other_engagement', label: 'Tương tác khác (5%)' }
+        ]
+      case 'service_software':
+        return [
+          { value: 'custom_software_dev', label: 'Phát triển phần mềm (10%)' },
+          { value: 'api_integration', label: 'Tích hợp API (10%)' },
+          { value: 'other_service_software', label: 'Dịch vụ phần mềm khác (10%)' }
+        ]
+      case 'blockchain':
+        return [
+          { value: 'blockchain_dev', label: 'Phát triển Blockchain (10%)' },
+          { value: 'smart_contract', label: 'Smart Contract (10%)' },
+          { value: 'nft_service', label: 'Dịch vụ NFT (10%)' },
+          { value: 'other_blockchain', label: 'Blockchain khác (10%)' }
+        ]
+      case 'service_other':
+        return [
+          { value: 'general_other', label: 'Dịch vụ khác (5%)' }
+        ]
+      default:
+        return []
+    }
+  }, [shopCategory])
+
+  // Reset category when shop type changes
+  const handleShopTypeChange = (newType: 'product' | 'service' | '') => {
+    setShopType(newType)
+    // Reset category and product type when shop type changes
+    setShopCategory('')
+    setProductType('')
+  }
+
+  // Reset product type when category changes
+  const handleCategoryChange = (newCategory: string) => {
+    setShopCategory(newCategory)
+    // Reset product type when category changes
+    setProductType('')
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    onSubmitSuccess({
+      name: shopName.trim() || item.name,
+      category: shopCategory || item.category,
+      shopType: shopType === 'service' ? 'Dịch vụ' : 'Sản phẩm',
+      status,
+      resellerEnabled: allowReseller,
+    })
   }
 
   return (
     <section className="rounded-md border border-[#dfe4ef] bg-white p-4 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-2xl font-semibold text-[#1f2937]">{formTitle}</h2>
-        <button
-          type="button"
-          className="rounded bg-[#19a56f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#168f60]"
-        >
-          Chỉnh sửa mặt hàng
-        </button>
+        {!isCreateMode && (
+          <button
+            type="button"
+            onClick={onInventory}
+            className="rounded bg-[#19a56f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#168f60]"
+          >
+            Chỉnh sửa mặt hàng
+          </button>
+        )}
       </div>
 
       <form className="space-y-4 text-sm text-[#374151]" onSubmit={handleSubmit}>
@@ -52,29 +165,54 @@ export default function ShopDetailForm({ item, onBack }: ShopDetailFormProps) {
             />
           </label>
           <label className="space-y-1">
-            <span className="font-medium">Loại gian hàng</span>
+            <span className="font-medium">Loại hình kinh doanh</span>
             <select
               value={shopType}
-              onChange={(event) => setShopType(event.target.value)}
+              onChange={(event) => handleShopTypeChange(event.target.value as 'product' | 'service' | '')}
               className="w-full rounded border border-[#d6dbe4] bg-[#f8fafc] px-3 py-2 outline-none focus:border-[#93b2da]"
             >
-              <option>Tài khoản</option>
-              <option>Dịch vụ</option>
+              <option value="">Chọn ...</option>
+              <option value="product">Bán sản phẩm</option>
+              <option value="service">Bán dịch vụ</option>
             </select>
           </label>
         </div>
 
-        <label className="space-y-1 block">
-          <span className="font-medium">Loại sản phẩm - Chiết khấu cho sàn</span>
-          <select
-            value={productType}
-            onChange={(event) => setProductType(event.target.value)}
-            className="w-full rounded border border-[#d6dbe4] bg-[#f8fafc] px-3 py-2 outline-none focus:border-[#93b2da]"
-          >
-            <option>Tài khoản FB (2%)</option>
-            <option>Email (2%)</option>
-          </select>
-        </label>
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="space-y-1 block">
+            <span className="font-medium">Loại gian hàng</span>
+            <select
+              value={shopCategory}
+              onChange={(event) => handleCategoryChange(event.target.value)}
+              disabled={!shopType}
+              className="w-full rounded border border-[#d6dbe4] bg-[#f8fafc] px-3 py-2 outline-none focus:border-[#93b2da] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="">Chọn ...</option>
+              {categoryOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-1 block">
+            <span className="font-medium">Loại sản phẩm - Chiết khấu cho sàn</span>
+            <select
+              value={productType}
+              onChange={(event) => setProductType(event.target.value)}
+              disabled={!shopCategory}
+              className="w-full rounded border border-[#d6dbe4] bg-[#f8fafc] px-3 py-2 outline-none focus:border-[#93b2da] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="">Chọn ...</option>
+              {productTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
         <label className="space-y-1 block">
           <span className="font-medium">Đánh giá hoàn tiền (%)</span>
@@ -146,7 +284,7 @@ export default function ShopDetailForm({ item, onBack }: ShopDetailFormProps) {
             Quay lại
           </button>
           <button type="submit" className="rounded bg-[#19a56f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#168f60]">
-            Cập nhật
+            {submitLabel}
           </button>
         </div>
       </form>

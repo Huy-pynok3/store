@@ -14,7 +14,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:seed": "npx ts-node prisma/seed.ts",
     "prisma:seed:prod": "node dist/prisma/seed.js",
     "deploy:check": "node scripts/check-env.js",
     "deploy:secrets": "node scripts/generate-secrets.js",

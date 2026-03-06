@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -27,7 +27,7 @@ const draftShop: ShopListing = {
   status: 'P - Chờ duyệt',
 }
 
-export default function UserShopDashboard() {
+function UserShopDashboardContent() {
   const searchParams = useSearchParams()
   const { user } = useAuth()
   const tabParam = searchParams.get('tab')
@@ -126,5 +126,13 @@ export default function UserShopDashboard() {
         />
       )}
     </main>
+  )
+}
+
+export default function UserShopDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#e7ebf3] flex items-center justify-center">Loading...</div>}>
+      <UserShopDashboardContent />
+    </Suspense>
   )
 }

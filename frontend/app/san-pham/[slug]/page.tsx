@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { getProductDetail } from '@/lib/api/listing'
@@ -78,7 +78,7 @@ const mockReviews = [
   },
 ]
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+function ProductDetailPageContent({ params }: { params: { slug: string } }) {
   const searchParams = useSearchParams()
   const isNewShopPreview = searchParams.get('preview') === 'new-shop-empty'
   const previewShopName = searchParams.get('shopName') || 'Gian hàng mới'
@@ -197,4 +197,21 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const transformedProduct = transformProductData(product)
 
   return <ProductDetail product={transformedProduct} reviews={mockReviews} />
+}
+
+export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+  return (
+    <Suspense fallback={
+      <div className="max-w-[1600px] w-full mx-auto px-3 py-3">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Đang tải sản phẩm...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <ProductDetailPageContent params={params} />
+    </Suspense>
+  )
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import UserShopSidebar from '@/user-shop/components/UserShopSidebar'
@@ -10,7 +11,7 @@ const recentUploadRows = [
   { itemName: 'Clone 50 - 500bb > 8 Tháng', fileName: 'test file 9.txt.log', uploadedAt: '24/04/2024 22:56', result: 'TOTAL:2|SUCCESS:0|ERROR:2', status: 'Thành công' },
 ]
 
-export default function ShopItemManagementPage() {
+function ShopItemManagementPageContent() {
   const searchParams = useSearchParams()
   const { user } = useAuth()
   const shopName = searchParams.get('shopName') || 'Gian hàng mới'
@@ -154,5 +155,13 @@ export default function ShopItemManagementPage() {
         </div>
       </section>
     </main>
+  )
+}
+
+export default function ShopItemManagementPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#cfd8e6] flex items-center justify-center">Loading...</div>}>
+      <ShopItemManagementPageContent />
+    </Suspense>
   )
 }

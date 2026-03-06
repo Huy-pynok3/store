@@ -88,16 +88,17 @@ tmp/
 *.log
 
 # media files (if not needed in repo)
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.svg
-*.ico
-*.webp
-*.mp4
-*.mov
-*.avi
+# Commented out to allow public images to be committed
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.svg
+# *.ico
+# *.webp
+# *.mp4
+# *.mov
+# *.avi
 
 # Kiro
 .kiro/*

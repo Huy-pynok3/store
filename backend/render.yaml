@@ -6,10 +6,10 @@ services:
   - type: web
     name: marketplace-backend
     runtime: node
-    region: singapore
+    region: oregon
     plan: free
     rootDir: backend
-    buildCommand: npm ci && npm run prisma:generate && npm run build
+    buildCommand: npm ci && npm run prisma:generate && npx prisma migrate deploy && npm run build
     startCommand: npm run start:prod
     healthCheckPath: /api/health
     envVars:
@@ -42,12 +42,12 @@ databases:
   - name: marketplace-db
     databaseName: marketplace
     user: marketplace_user
-    region: singapore
+    region: oregon
     plan: free
     ipAllowList: []
 
   # Redis Cache
   - name: marketplace-redis
-    region: singapore
+    region: oregon
     plan: free
     maxmemoryPolicy: allkeys-lru

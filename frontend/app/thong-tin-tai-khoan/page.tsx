@@ -64,16 +64,16 @@ export default function AccountInfoPage() {
         <section>
           <Card padding="none">
             <div className="border-b border-[#ececec] px-5 py-7">
-              <div className="flex min-h-[72px] items-center gap-5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2d9df1] text-[11px] font-bold text-white">
+              <div className="flex min-h-[76px] items-center pl-6 md:pl-10">
+                <div className="ml-4 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2d9df1] text-[12px] font-bold text-white">
                   LV 4
                 </div>
-                <div className="w-full">
-                  <div className="w-[78%]">
-                    <div className="h-[10px] w-full overflow-hidden rounded-[2px] bg-[#e5e7eb]">
+                <div className="ml-12 flex w-full justify-start pl-2">
+                  <div className="relative w-[86%]">
+                    <div className="h-[13px] w-full overflow-hidden rounded-[2px] bg-[#e5e7eb]">
                       <div className="h-full w-[18%] bg-[repeating-linear-gradient(135deg,#1f86e5_0px,#1f86e5_4px,#4ca6ef_4px,#4ca6ef_8px)]" />
                     </div>
-                    <p className="mt-1 text-center text-[12px] leading-none text-[#b35a5a]">
+                    <p className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-center text-[12px] leading-none text-[#b35a5a]">
                     Hãy mua/bán thêm 787.412đ để đạt level tiếp theo.
                     </p>
                   </div>
@@ -82,7 +82,7 @@ export default function AccountInfoPage() {
             </div>
 
             <div className="px-5 py-2">
-              <table className="w-full text-[14px]">
+              <table className="w-full table-fixed text-[14px] [&_td:first-child]:w-[150px] [&_td:first-child]:pr-0 [&_td:first-child]:text-center [&_td:last-child]:pl-0 [&_td:last-child]:text-center">
                 <tbody>
                   <InfoRow label="Tài khoản" value={displayUsername} />
                   <InfoRow label="Họ tên" value={displayName} />
@@ -99,7 +99,9 @@ export default function AccountInfoPage() {
                     label="Mua hàng bằng API"
                     value={
                       <button className="inline-flex items-center gap-1 text-[#c94444] hover:underline">
-                        <span aria-hidden>✖</span>
+                        <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#d63b3b] text-white" aria-hidden="true">
+                          <i className="fa-solid fa-xmark not-italic text-[9px] leading-none" aria-hidden="true" />
+                        </span>
                         {mockData.apiKey}
                       </button>
                     }
@@ -107,9 +109,11 @@ export default function AccountInfoPage() {
                   <InfoRow
                     label="Bảo mật 2 lớp"
                     value={
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col items-center gap-1 text-center">
                         <button className="inline-flex w-fit items-center gap-1 text-[#c94444] hover:underline">
-                          <span aria-hidden>✖</span>
+                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#d63b3b] text-white" aria-hidden="true">
+                            <i className="fa-solid fa-xmark not-italic text-[9px] leading-none" aria-hidden="true" />
+                          </span>
                           {mockData.twoFactorEnabled ? 'Đã bật' : 'Chưa bật'}
                         </button>
                         <p className="text-[12px] text-[#2d9f5d]">
@@ -121,9 +125,11 @@ export default function AccountInfoPage() {
                   <InfoRow
                     label="Kết nối Telegram"
                     value={
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col items-center gap-1 text-center">
                         <button className="inline-flex w-fit items-center gap-1 text-[#c94444] hover:underline">
-                          <span aria-hidden>✖</span>
+                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#d63b3b] text-white" aria-hidden="true">
+                            <i className="fa-solid fa-xmark not-italic text-[9px] leading-none" aria-hidden="true" />
+                          </span>
                           {mockData.telegramConnected ? 'Đã kết nối' : 'Chưa kết nối'}
                         </button>
                         <p className="text-[12px] text-[#2d9f5d]">
@@ -178,3 +184,4 @@ export default function AccountInfoPage() {
     </PageContainer>
   )
 }
+

@@ -23,7 +23,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data: https://cdnjs.cloudflare.com",
-              "connect-src 'self' https://challenges.cloudflare.com http://localhost:* http://127.0.0.1:* http://192.168.1.254:*",
+              "connect-src 'self' https://challenges.cloudflare.com https://marketplace-backend-kpwq.onrender.com http://localhost:* http://127.0.0.1:* http://192.168.1.254:*",
             ].join('; '),
           },
         ],

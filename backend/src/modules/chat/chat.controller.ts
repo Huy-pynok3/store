@@ -22,6 +22,11 @@ export class ChatController {
     return this.chatService.listConversations(req.user.userId);
   }
 
+  @Get('unread-count')
+  unreadCount(@Request() req) {
+    return this.chatService.getUnreadCount(req.user.userId);
+  }
+
   @Post('conversations')
   createConversation(@Request() req, @Body() body: CreateConversationDto) {
     return this.chatService.createDirectConversation(

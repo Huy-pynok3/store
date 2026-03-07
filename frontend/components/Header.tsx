@@ -1,8 +1,9 @@
 ﻿'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { io, Socket } from 'socket.io-client'
 import LoginPopup from './LoginPopup'
 import UserMenu from './UserMenu'
 import { DropdownMenu, NotificationBadge } from './ui'
@@ -11,6 +12,8 @@ import { API_ENDPOINTS } from '@/lib/api'
 
 export default function Header() {
   const router = useRouter()
+  const pathname = usePathname() || ''
+  const isChatBoxPage = pathname.startsWith('/chat-box')
   const { isLoggedIn, user, logout } = useAuth()
   const [showLoginPopup, setShowLoginPopup] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -36,14 +39,21 @@ export default function Header() {
   }, [isMobileMenuOpen])
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn || isChatBoxPage) {
       setUnreadChatCount(0)
       return
     }
 
     let isMounted = true
+    let socket: Socket | null = null
+
+    const token = localStorage.getItem('access_token')
+    const socketBaseUrl = API_ENDPOINTS.CHAT.CONVERSATIONS.replace('/api/chat/conversations', '')
+    const unreadCountEndpoint = API_ENDPOINTS.CHAT.CONVERSATIONS.replace(
+      '/api/chat/conversations',
+      '/api/chat/unread-count',
+    )
     const fetchUnreadChatCount = async () => {
-      const token = localStorage.getItem('access_token')
       if (!token) {
         if (isMounted) {
           setUnreadChatCount(0)
@@ -52,7 +62,7 @@ export default function Header() {
       }
 
       try {
-        const response = await fetch(API_ENDPOINTS.CHAT.CONVERSATIONS, {
+        const response = await fetch(unreadCountEndpoint, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -63,8 +73,8 @@ export default function Header() {
           return
         }
 
-        const conversations = (await response.json()) as Array<{ unreadCount?: number }>
-        const unreadTotal = conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
+        const data = (await response.json()) as { unreadCount?: number }
+        const unreadTotal = data.unreadCount ?? 0
         if (isMounted) {
           setUnreadChatCount(unreadTotal)
         }
@@ -74,21 +84,37 @@ export default function Header() {
     }
 
     void fetchUnreadChatCount()
-    const intervalId = window.setInterval(() => {
-      void fetchUnreadChatCount()
-    }, 10000)
 
     const handleWindowFocus = () => {
       void fetchUnreadChatCount()
     }
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchUnreadChatCount()
+      }
+    }
     window.addEventListener('focus', handleWindowFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    if (token) {
+      socket = io(socketBaseUrl, {
+        auth: { token },
+      })
+      socket.on('connect', () => {
+        void fetchUnreadChatCount()
+      })
+      socket.on('chat:conversation:refresh', () => {
+        void fetchUnreadChatCount()
+      })
+    }
 
     return () => {
       isMounted = false
-      window.clearInterval(intervalId)
       window.removeEventListener('focus', handleWindowFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      socket?.disconnect()
     }
-  }, [isLoggedIn])
+  }, [isLoggedIn, isChatBoxPage])
 
   const handleUserIconClick = () => {
     const isMobile = window.innerWidth < 640

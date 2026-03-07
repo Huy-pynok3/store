@@ -139,6 +139,36 @@ export class ChatService {
     );
   }
 
+  async getUnreadCount(userId: string) {
+    await this.ensureSupportConversation(userId);
+
+    const participants = await this.prisma.conversationParticipant.findMany({
+      where: { userId },
+      select: {
+        conversationId: true,
+        lastReadAt: true,
+      },
+    });
+
+    if (participants.length === 0) {
+      return { unreadCount: 0 };
+    }
+
+    const unreadCount = await this.prisma.chatMessage.count({
+      where: {
+        senderId: { not: userId },
+        OR: participants.map((participant) => ({
+          conversationId: participant.conversationId,
+          ...(participant.lastReadAt
+            ? { createdAt: { gt: participant.lastReadAt } }
+            : {}),
+        })),
+      },
+    });
+
+    return { unreadCount };
+  }
+
   async getConversationMessages(userId: string, conversationId: string) {
     await this.assertParticipant(conversationId, userId);
 

@@ -385,13 +385,21 @@ export default function ChatBoxPage() {
     }
 
     void loadConversations(true)
-    const intervalId = window.setInterval(() => {
+    const handleWindowFocus = () => {
       void loadConversations(false)
-    }, 5000)
+    }
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void loadConversations(false)
+      }
+    }
+    window.addEventListener('focus', handleWindowFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       isMounted = false
-      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handleWindowFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [isLoggedIn, user?.id])
 
@@ -469,13 +477,21 @@ export default function ChatBoxPage() {
     }
 
     void loadMessages(true)
-    const intervalId = window.setInterval(() => {
+    const handleWindowFocus = () => {
       void loadMessages(false)
-    }, 3000)
+    }
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void loadMessages(false)
+      }
+    }
+    window.addEventListener('focus', handleWindowFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       isMounted = false
-      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handleWindowFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [isLoggedIn, selectedConversationId, user?.id])
 

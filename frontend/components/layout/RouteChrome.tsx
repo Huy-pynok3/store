@@ -15,15 +15,16 @@ interface RouteChromeProps {
 export default function RouteChrome({ children }: RouteChromeProps) {
   const pathname = usePathname() || ''
   const hideSiteChrome = pathname.startsWith('/quan-ly-cua-hang')
+  const isChatBoxPage = pathname.startsWith('/chat-box')
 
   return (
     <>
       <OAuthHandler />
       {!hideSiteChrome && <Header />}
-      <div className={hideSiteChrome ? '' : 'pb-[56px] sm:pb-0'}>{children}</div>
-      {!hideSiteChrome && <Footer />}
-      {!hideSiteChrome && <FloatingAuctionBar />}
-      {!hideSiteChrome && <ScrollTopButton />}
+      <div className={hideSiteChrome || isChatBoxPage ? '' : 'pb-[56px] sm:pb-0'}>{children}</div>
+      {!hideSiteChrome && !isChatBoxPage && <Footer />}
+      {!hideSiteChrome && !isChatBoxPage && <FloatingAuctionBar />}
+      {!hideSiteChrome && !isChatBoxPage && <ScrollTopButton />}
       <InitialPageLoader />
     </>
   )

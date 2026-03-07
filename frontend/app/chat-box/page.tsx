@@ -1,11 +1,11 @@
 'use client'
 
-import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
-import { Avatar, LoadingSpinner, PageContainer } from '@/components/ui'
+import { Avatar, LoadingSpinner } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
-import { API_ENDPOINTS, API_URL } from '@/lib/api'
+import { API_ENDPOINTS, getApiBaseUrlForSocket } from '@/lib/api'
 
 type ConversationListItem = {
   id: string
@@ -200,16 +200,57 @@ export default function ChatBoxPage() {
   const [isSocketConnected, setIsSocketConnected] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showConversationMenu, setShowConversationMenu] = useState(false)
+  const [mobileKeyboardOffset, setMobileKeyboardOffset] = useState(0)
+  const [isComposerFocused, setIsComposerFocused] = useState(false)
   const knownIncomingMessageIds = useRef<Set<string>>(new Set())
+  const shouldAutoScrollRef = useRef(true)
+  const previousMessageCountRef = useRef(0)
   const messageContainerRef = useRef<HTMLDivElement | null>(null)
   const socketRef = useRef<Socket | null>(null)
   const selectedConversationIdRef = useRef<string | null>(null)
   const emojiPickerRef = useRef<HTMLDivElement | null>(null)
   const conversationMenuRef = useRef<HTMLDivElement | null>(null)
 
+  const updateKeyboardOffset = useCallback(() => {
+    if (typeof window === 'undefined' || window.innerWidth >= 1024) {
+      setMobileKeyboardOffset(0)
+      return
+    }
+
+    const viewport = window.visualViewport
+    if (!viewport) {
+      setMobileKeyboardOffset(0)
+      return
+    }
+
+    const offset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+    setMobileKeyboardOffset(offset > 120 ? offset : 0)
+  }, [])
+
   useEffect(() => {
     selectedConversationIdRef.current = selectedConversationId
   }, [selectedConversationId])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) {
+      return
+    }
+
+    const handleViewportChange = () => {
+      window.requestAnimationFrame(updateKeyboardOffset)
+    }
+
+    handleViewportChange()
+    window.visualViewport.addEventListener('resize', handleViewportChange)
+    window.visualViewport.addEventListener('scroll', handleViewportChange)
+    window.addEventListener('resize', handleViewportChange)
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleViewportChange)
+      window.visualViewport?.removeEventListener('scroll', handleViewportChange)
+      window.removeEventListener('resize', handleViewportChange)
+    }
+  }, [updateKeyboardOffset])
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -254,6 +295,7 @@ export default function ChatBoxPage() {
     () => formatPresenceStatus(Boolean(selectedParticipant?.online), selectedParticipant?.lastSeenAt),
     [selectedParticipant?.lastSeenAt, selectedParticipant?.online],
   )
+  const shouldDockComposerToKeyboard = isComposerFocused && mobileKeyboardOffset > 0
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -420,7 +462,7 @@ export default function ChatBoxPage() {
       return
     }
 
-    const socket = io(API_URL, {
+    const socket = io(getApiBaseUrlForSocket(), {
       auth: { token },
     })
     socketRef.current = socket
@@ -556,8 +598,37 @@ export default function ChatBoxPage() {
       return
     }
 
-    messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight
+    const container = messageContainerRef.current
+    const messageCount = conversationDetail?.messages.length ?? 0
+    const previousMessageCount = previousMessageCountRef.current
+    const hasNewMessage = messageCount > previousMessageCount
+
+    if (hasNewMessage && shouldAutoScrollRef.current) {
+      container.scrollTop = container.scrollHeight
+    }
+
+    previousMessageCountRef.current = messageCount
   }, [conversationDetail?.messages])
+
+  useEffect(() => {
+    const container = messageContainerRef.current
+    if (!container) {
+      return
+    }
+
+    const updateScrollIntent = () => {
+      const distanceFromBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight
+      shouldAutoScrollRef.current = distanceFromBottom < 80
+    }
+
+    updateScrollIntent()
+    container.addEventListener('scroll', updateScrollIntent)
+
+    return () => {
+      container.removeEventListener('scroll', updateScrollIntent)
+    }
+  }, [selectedConversationId, conversationDetail?.messages.length])
 
   const handleSendMessage = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault()
@@ -771,28 +842,33 @@ export default function ChatBoxPage() {
 
   if (loading || isLoadingConversations) {
     return (
-      <PageContainer maxWidth="sm" className="pb-3 pt-2 sm:pb-8 sm:pt-3">
-        <div className="flex min-h-[420px] items-center justify-center border border-[#d8d8d8] bg-white">
-          <LoadingSpinner />
+      <div className="bg-[#f2f2f2]">
+        <div className="mx-auto max-w-[1020px] px-3 pb-3 pt-2 sm:pb-8 sm:pt-3">
+          <div className="flex min-h-[420px] items-center justify-center border border-[#d8d8d8] bg-white">
+            <LoadingSpinner />
+          </div>
         </div>
-      </PageContainer>
+      </div>
     )
   }
 
   if (!isLoggedIn) {
     return (
-      <PageContainer maxWidth="sm" className="pb-3 pt-2 sm:pb-8 sm:pt-3">
+      <div className="bg-[#f2f2f2]">
+        <div className="mx-auto max-w-[1020px] px-3 pb-3 pt-2 sm:pb-8 sm:pt-3">
         <div className="border border-[#d8d8d8] bg-white px-6 py-10 text-center">
           <h1 className="text-[28px] font-semibold text-[#383838]">Tin nhan</h1>
           <p className="mt-3 text-[14px] text-[#6b6b6b]">Bạn cần đăng nhập để xem và gửi tin nhắn.</p>
         </div>
-      </PageContainer>
+        </div>
+      </div>
     )
   }
 
   return (
-    <PageContainer maxWidth="sm" className="pb-3 pt-2 sm:pb-8 sm:pt-3">
-      <section className="h-[calc(100dvh-220px)] overflow-hidden border border-[#d8d8d8] bg-white lg:h-[calc(100dvh-210px)] lg:grid lg:grid-cols-[350px_1fr]">
+    <div className="bg-[#f2f2f2]">
+      <div className="mx-auto h-[calc(100dvh-132px)] max-w-[1020px] overflow-hidden px-3 pb-0 pt-2 sm:h-[calc(100dvh-150px)] sm:pt-3">
+        <section className="h-full overflow-hidden border border-[#d8d8d8] bg-white lg:grid lg:grid-cols-[350px_1fr]">
         <aside className={`border-r border-[#d8d8d8] ${mobileView === 'detail' ? 'hidden lg:block' : 'block'}`}>
           <div className="grid grid-cols-[1fr_44px] border-b border-[#d8d8d8]">
             <div className="flex items-center gap-1 px-4 py-2.5">
@@ -891,7 +967,12 @@ export default function ChatBoxPage() {
             </div>
           </div>
 
-          <div ref={messageContainerRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-white px-3 py-4 sm:px-4">
+          <div
+            ref={messageContainerRef}
+            className={`min-h-0 flex-1 space-y-3 overflow-y-auto bg-white px-3 py-4 sm:px-4 ${
+              shouldDockComposerToKeyboard ? 'pb-[88px]' : 'pb-4'
+            } lg:pb-4`}
+          >
             {error && (
               <div className="rounded border border-[#f1c5c5] bg-[#fff3f3] px-3 py-2 text-[13px] text-[#a43f3f]">
                 {error}
@@ -932,7 +1013,15 @@ export default function ChatBoxPage() {
             )}
           </div>
 
-          <div className="sticky bottom-0 z-10 shrink-0 border-t border-[#d8d8d8] bg-white px-3 py-2">
+          <div
+            className={`shrink-0 border-t border-[#d8d8d8] bg-white px-3 py-2 ${
+              shouldDockComposerToKeyboard ? 'fixed left-0 right-0 z-20' : 'sticky bottom-0 z-10'
+            } lg:static lg:z-10`}
+            style={{
+              bottom: shouldDockComposerToKeyboard ? mobileKeyboardOffset : 0,
+              paddingBottom: `calc(0.5rem + env(safe-area-inset-bottom, 0px))`,
+            }}
+          >
             <form onSubmit={handleSendMessage} className="flex items-center gap-3">
               <button type="button" className="text-[#707070]" aria-label="Dinh kem tep" disabled>
                 <i className="far fa-file text-[18px]"></i>
@@ -1005,6 +1094,16 @@ export default function ChatBoxPage() {
                 value={messageInput}
                 onChange={(event) => setMessageInput(event.target.value)}
                 onKeyDown={handleInputKeyDown}
+                onFocus={() => {
+                  setIsComposerFocused(true)
+                  setMobileKeyboardOffset(0)
+                  window.requestAnimationFrame(updateKeyboardOffset)
+                  window.setTimeout(updateKeyboardOffset, 80)
+                }}
+                onBlur={() => {
+                  setIsComposerFocused(false)
+                  setMobileKeyboardOffset(0)
+                }}
                 placeholder="Type a message"
                 disabled={!selectedConversationId || isSending}
                 className="h-9 flex-1 text-[14px] outline-none placeholder:text-[#949494] disabled:cursor-not-allowed disabled:text-[#9b9b9b]"
@@ -1013,14 +1112,15 @@ export default function ChatBoxPage() {
                 type="submit"
                 aria-label="Gui tin nhan"
                 disabled={!selectedConversationId || !messageInput.trim() || isSending}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0f86aa] text-white hover:bg-[#0d7594] disabled:cursor-not-allowed disabled:bg-[#8bc1cf]"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0f86aa] text-white hover:bg-[#0d7594]"
               >
                 <i className="fas fa-paper-plane text-[15px]"></i>
               </button>
             </form>
           </div>
         </div>
-      </section>
-    </PageContainer>
+        </section>
+      </div>
+    </div>
   )
 }

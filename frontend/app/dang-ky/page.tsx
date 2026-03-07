@@ -8,6 +8,7 @@ import { Button, Card, Input, PasswordInput } from '@/components/ui'
 import Turnstile from '@/components/Turnstile'
 import { API_ENDPOINTS } from '@/lib/api'
 import { getErrorMessage } from '@/lib/errorMessages'
+import { dispatchAuthStateChange } from '@/lib/auth-events'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -211,6 +212,7 @@ export default function RegisterPage() {
         // Store JWT token
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('isLoggedIn', 'true')
+        dispatchAuthStateChange()
         
         // Show success message (optional)
         await Swal.fire({
@@ -223,6 +225,7 @@ export default function RegisterPage() {
         
         // Redirect to homepage
         router.push('/')
+        router.refresh()
       } else {
         // Show error message
         await Swal.fire({

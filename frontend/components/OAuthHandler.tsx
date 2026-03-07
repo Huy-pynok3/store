@@ -2,6 +2,7 @@
 
 import { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { dispatchAuthStateChange } from '@/lib/auth-events'
 
 function OAuthHandlerContent() {
   const router = useRouter()
@@ -16,16 +17,10 @@ function OAuthHandlerContent() {
       localStorage.setItem('access_token', token)
       localStorage.setItem('isLoggedIn', 'true')
       
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new Event('storage'))
+      dispatchAuthStateChange()
       
       // Remove token from URL and redirect to home
       router.replace('/')
-      
-      // Force reload to update all components
-      setTimeout(() => {
-        window.location.href = '/'
-      }, 100)
     } else if (error) {
       // Handle OAuth error
       console.error('OAuth error:', error)

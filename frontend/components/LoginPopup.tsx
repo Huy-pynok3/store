@@ -7,6 +7,7 @@ import Swal from 'sweetalert2'
 import { API_ENDPOINTS } from '@/lib/api'
 import { PasswordInput } from '@/components/ui'
 import { getErrorMessage } from '@/lib/errorMessages'
+import { dispatchAuthStateChange } from '@/lib/auth-events'
 
 interface LoginPopupProps {
   isOpen: boolean
@@ -110,7 +111,7 @@ export default function LoginPopup({ isOpen, onClose }: LoginPopupProps) {
         localStorage.setItem('isLoggedIn', 'true')
         
         // Dispatch storage event to update other components
-        window.dispatchEvent(new Event('storage'))
+        dispatchAuthStateChange()
         
         // Close popup
         onClose()
@@ -124,8 +125,7 @@ export default function LoginPopup({ isOpen, onClose }: LoginPopupProps) {
           timer: 1500
         })
         
-        // Reload to update UI
-        window.location.reload()
+        router.refresh()
       } else {
         // Show error message
         await Swal.fire({

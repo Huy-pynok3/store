@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { API_ENDPOINTS } from '@/lib/api'
+import { AUTH_STATE_CHANGE_EVENT, dispatchAuthStateChange } from '@/lib/auth-events'
 
 interface User {
   id: string
@@ -66,9 +67,11 @@ export function useAuth() {
 
     // Listen for storage changes
     window.addEventListener('storage', checkLoginStatus)
+    window.addEventListener(AUTH_STATE_CHANGE_EVENT, checkLoginStatus)
 
     return () => {
       window.removeEventListener('storage', checkLoginStatus)
+      window.removeEventListener(AUTH_STATE_CHANGE_EVENT, checkLoginStatus)
     }
   }, [])
 
@@ -77,7 +80,7 @@ export function useAuth() {
     localStorage.removeItem('isLoggedIn')
     setIsLoggedIn(false)
     setUser(null)
-    window.dispatchEvent(new Event('storage'))
+    dispatchAuthStateChange()
   }
 
   return { isLoggedIn, user, loading, logout, refetch: fetchUser }

@@ -205,6 +205,7 @@ export default function ChatBoxPage() {
   const knownIncomingMessageIds = useRef<Set<string>>(new Set())
   const shouldAutoScrollRef = useRef(true)
   const previousMessageCountRef = useRef(0)
+  const shouldForceScrollToBottomRef = useRef(false)
   const messageContainerRef = useRef<HTMLDivElement | null>(null)
   const socketRef = useRef<Socket | null>(null)
   const selectedConversationIdRef = useRef<string | null>(null)
@@ -227,8 +228,36 @@ export default function ChatBoxPage() {
     setMobileKeyboardOffset(offset > 120 ? offset : 0)
   }, [])
 
+  const scrollMessagesToBottom = useCallback(() => {
+    const container = messageContainerRef.current
+    if (!container) {
+      return
+    }
+
+    container.scrollTop = container.scrollHeight
+  }, [])
+
   useEffect(() => {
     selectedConversationIdRef.current = selectedConversationId
+  }, [selectedConversationId])
+
+  useEffect(() => {
+    if (mobileView !== 'detail' || !shouldForceScrollToBottomRef.current) {
+      return
+    }
+
+    if ((conversationDetail?.messages.length ?? 0) === 0) {
+      return
+    }
+
+    scrollMessagesToBottom()
+    shouldForceScrollToBottomRef.current = false
+  }, [conversationDetail?.messages.length, mobileView, scrollMessagesToBottom])
+
+  useEffect(() => {
+    shouldAutoScrollRef.current = true
+    previousMessageCountRef.current = 0
+    shouldForceScrollToBottomRef.current = true
   }, [selectedConversationId])
 
   useEffect(() => {
@@ -604,7 +633,10 @@ export default function ChatBoxPage() {
     const previousMessageCount = previousMessageCountRef.current
     const hasNewMessage = messageCount > previousMessageCount
 
-    if (hasNewMessage && shouldAutoScrollRef.current) {
+    if (shouldForceScrollToBottomRef.current && messageCount > 0) {
+      container.scrollTop = container.scrollHeight
+      shouldForceScrollToBottomRef.current = false
+    } else if (hasNewMessage && shouldAutoScrollRef.current) {
       container.scrollTop = container.scrollHeight
     }
 
@@ -895,8 +927,14 @@ export default function ChatBoxPage() {
                     key={chat.id}
                     type="button"
                     onClick={() => {
+                      shouldAutoScrollRef.current = true
+                      shouldForceScrollToBottomRef.current = true
+                      previousMessageCountRef.current = 0
                       setSelectedConversationId(chat.id)
                       setMobileView('detail')
+                      window.requestAnimationFrame(() => {
+                        window.requestAnimationFrame(scrollMessagesToBottom)
+                      })
                     }}
                     className={`flex w-full items-start gap-3 border-b border-[#e8e8e8] px-3 py-3 text-left ${isActive ? 'bg-[#eceff1]' : 'bg-white hover:bg-[#f8f8f8]'}`}
                   >

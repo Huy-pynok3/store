@@ -8,12 +8,17 @@ import { PrismaService } from '@/database/prisma.service';
 
 @Injectable()
 export class ChatService {
-  private readonly supportAdminUsername = 'taphoammo';
-
   constructor(private prisma: PrismaService) {}
 
   async listConversations(userId: string) {
     await this.ensureSupportConversation(userId);
+
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        role: true,
+      },
+    });
 
     const participantRows = await this.prisma.conversationParticipant.findMany({
       where: { userId },
@@ -57,7 +62,12 @@ export class ChatService {
         const otherParticipants = participant.conversation.participants
           .filter((item) => item.userId !== userId)
           .map((item) => item.user);
-        const displayUser = otherParticipants[0] ?? null;
+        const displayUser =
+          (currentUser?.role === 'ADMIN'
+            ? otherParticipants.find((item) => item.role !== 'ADMIN')
+            : otherParticipants.find((item) => item.role === 'ADMIN')) ??
+          otherParticipants[0] ??
+          null;
 
         const unreadCount = await this.prisma.chatMessage.count({
           where: {
@@ -283,21 +293,97 @@ export class ChatService {
   }
 
   private async ensureSupportConversation(userId: string) {
-    const adminUser = await this.prisma.user.findFirst({
-      where: {
-        username: this.supportAdminUsername,
-        role: 'ADMIN',
-        isActive: true,
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        role: true,
       },
-      select: { id: true },
     });
 
-    if (!adminUser || adminUser.id === userId) {
+    if (!currentUser || currentUser.role === 'ADMIN') {
       return;
     }
 
-    const conversation = await this.createDirectConversation(userId, adminUser.id);
-    await this.ensureSupportConversationMessages(conversation.id, adminUser.id);
+    const activeAdmins = await this.prisma.user.findMany({
+      where: {
+        role: 'ADMIN',
+        isActive: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (activeAdmins.length === 0) {
+      return;
+    }
+
+    const adminIds = activeAdmins.map((admin) => admin.id);
+    const userConversations = await this.prisma.conversation.findMany({
+      where: {
+        participants: {
+          some: { userId },
+        },
+      },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const supportConversation = userConversations.find((conversation) =>
+      conversation.participants.some((participant) => participant.userId === userId) &&
+      conversation.participants.some((participant) => participant.user.role === 'ADMIN') &&
+      conversation.participants.every(
+        (participant) => participant.userId === userId || participant.user.role === 'ADMIN',
+      ),
+    );
+
+    const conversation = supportConversation
+      ? await this.prisma.conversation.update({
+          where: { id: supportConversation.id },
+          data: {
+            type: ConversationType.SUPPORT,
+          },
+          select: { id: true },
+        })
+      : await this.prisma.conversation.create({
+          data: {
+            type: ConversationType.SUPPORT,
+            participants: {
+              create: [{ userId }, ...adminIds.map((adminId) => ({ userId: adminId }))],
+            },
+          },
+          select: { id: true },
+        });
+
+    const existingParticipantIds = supportConversation
+      ? supportConversation.participants.map((participant) => participant.userId)
+      : [userId, ...adminIds];
+    const missingAdminIds = adminIds.filter(
+      (adminId) => !existingParticipantIds.includes(adminId),
+    );
+
+    if (missingAdminIds.length > 0) {
+      await this.prisma.conversation.update({
+        where: { id: conversation.id },
+        data: {
+          participants: {
+            create: missingAdminIds.map((adminId) => ({ userId: adminId })),
+          },
+        },
+      });
+    }
+
+    await this.ensureSupportConversationMessages(conversation.id, adminIds[0]);
   }
 
   private async ensureSupportConversationMessages(
@@ -313,8 +399,7 @@ export class ChatService {
     }
 
     const initialMessages = [
-      'Xin hay canh giac voi giao dich khong duoc bao hiem ben ngoai san.',
-      'Chao ban, day la ho tro admin taphoammo. Neu can ho tro don hang, hay gui ma don va noi dung can xu ly.',
+      'Chào mừng bạn đến với taphoammo. Nếu có khó khăn gì trong quá trình sử dụng trang, nhắn tin cho mình ngay nhé. Bạn có thể tham khảo thêm về các câu hỏi thường gặp trên menu chính (FAQs). Xin cảm ơn.',
     ];
 
     await this.prisma.$transaction(async (tx) => {

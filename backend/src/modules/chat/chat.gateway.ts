@@ -49,6 +49,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
 
       client.data.userId = payload.sub;
+      this.chatService.markUserOnline(payload.sub);
       client.join(this.userRoom(payload.sub));
     } catch (error) {
       this.logger.warn(`Socket auth failed: ${error instanceof Error ? error.message : 'unknown error'}`);
@@ -56,7 +57,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  handleDisconnect(client: AuthedSocket) {
+  async handleDisconnect(client: AuthedSocket) {
+    if (client.data.userId) {
+      await this.chatService.markUserOffline(client.data.userId);
+    }
     this.logger.debug(`Socket disconnected: ${client.id}`);
   }
 

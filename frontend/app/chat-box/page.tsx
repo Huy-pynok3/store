@@ -25,6 +25,8 @@ type ConversationListItem = {
     username: string
     fullName: string | null
     role: string
+    online: boolean
+    lastSeenAt: string | null
   } | null
 }
 
@@ -48,6 +50,8 @@ type ConversationDetail = {
     username: string
     fullName: string | null
     role: string
+    online: boolean
+    lastSeenAt: string | null
   }>
   messages: ChatMessage[]
 }
@@ -56,6 +60,9 @@ type NewMessageEvent = {
   conversationId: string
   message: ChatMessage
 }
+
+const SUPPORT_AVATAR_SRC =
+  '/images/support-avatar.webp'
 
 function formatConversationDate(value: string) {
   return new Intl.DateTimeFormat('vi-VN', {
@@ -71,6 +78,35 @@ function formatMessageTime(value: string) {
     day: '2-digit',
     month: '2-digit',
   }).format(new Date(value))
+}
+
+function formatPresenceStatus(isOnline: boolean, lastSeenAt: string | null | undefined) {
+  if (isOnline) {
+    return 'Online'
+  }
+
+  if (!lastSeenAt) {
+    return 'Online'
+  }
+
+  const diffMs = Date.now() - new Date(lastSeenAt).getTime()
+  const diffMinutes = Math.max(1, Math.floor(diffMs / 60000))
+
+  if (diffMinutes < 60) {
+    return `Online ${diffMinutes} phút trước`
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60)
+  if (diffHours < 24) {
+    return `Online ${diffHours} giờ trước`
+  }
+
+  const diffDays = Math.floor(diffHours / 24)
+  return `Online ${diffDays} ngày trước`
+}
+
+function getChatAvatarSrc(role: string | null | undefined) {
+  return role === 'ADMIN' ? SUPPORT_AVATAR_SRC : undefined
 }
 
 async function playNotificationSound() {
@@ -201,6 +237,22 @@ export default function ChatBoxPage() {
   const selectedConversation = useMemo(
     () => conversations.find((item) => item.id === selectedConversationId) ?? null,
     [conversations, selectedConversationId],
+  )
+
+  const selectedParticipant = useMemo(() => {
+    const participantFromDetail =
+      conversationDetail?.participants.find((participant) => participant.id !== user?.id) ?? null
+
+    if (participantFromDetail) {
+      return participantFromDetail
+    }
+
+    return selectedConversation?.otherParticipant ?? null
+  }, [conversationDetail?.participants, selectedConversation?.otherParticipant, user?.id])
+
+  const selectedParticipantStatus = useMemo(
+    () => formatPresenceStatus(Boolean(selectedParticipant?.online), selectedParticipant?.lastSeenAt),
+    [selectedParticipant?.lastSeenAt, selectedParticipant?.online],
   )
 
   useEffect(() => {
@@ -744,7 +796,7 @@ export default function ChatBoxPage() {
         <aside className={`border-r border-[#d8d8d8] ${mobileView === 'detail' ? 'hidden lg:block' : 'block'}`}>
           <div className="grid grid-cols-[1fr_44px] border-b border-[#d8d8d8]">
             <div className="flex items-center gap-1 px-4 py-2.5">
-              <h2 className="text-[30px] font-semibold leading-none text-[#383838]">Gần đây</h2>
+              <h2 className="text-[22px] font-semibold leading-none text-[#383838]">Gần đây</h2>
               <i className="fas fa-volume-up text-[14px] text-[#5f5f5f]"></i>
             </div>
             <button type="button" className="flex items-center justify-center border-l border-[#d8d8d8] text-[18px] font-bold text-[#1f86aa] hover:bg-[#f6f6f6]">
@@ -771,12 +823,18 @@ export default function ChatBoxPage() {
                     }}
                     className={`flex w-full items-start gap-3 border-b border-[#e8e8e8] px-3 py-3 text-left ${isActive ? 'bg-[#eceff1]' : 'bg-white hover:bg-[#f8f8f8]'}`}
                   >
-                    <Avatar alt={chat.title} />
+                    <Avatar
+                      alt={chat.title}
+                      src={getChatAvatarSrc(chat.otherParticipant?.role)}
+                      className={chat.otherParticipant?.role === 'ADMIN' ? 'h-10 w-10' : ''}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-center justify-between gap-2">
-                        <div className="flex min-w-0 items-center gap-1.5">
+                        <div className="flex min-w-0 items-center gap-2">
                           <p className="truncate text-[14px] font-semibold leading-none text-[#3a3a3a]">{chat.title}</p>
-                          {chat.otherParticipant?.role === 'ADMIN' && <i className="fas fa-check-circle text-[12px] text-[#e73f36]" />}
+                          {chat.otherParticipant?.role === 'ADMIN' && (
+                            <i className="fas fa-check-circle text-[12px] text-[#e73f36]"></i>
+                          )}
                         </div>
                         <span className="shrink-0 text-[12px] text-[#4f4f4f]">{formatConversationDate(chat.updatedAt)}</span>
                       </div>
@@ -799,11 +857,22 @@ export default function ChatBoxPage() {
         <div className={`${mobileView === 'list' ? 'hidden lg:flex' : 'flex'} h-full min-h-0 flex-1 flex-col`}>
           <div className="shrink-0 border-b border-[#d8d8d8] bg-[#f7f7f7] px-3 py-2">
             <div className="relative flex items-center justify-center">
-              <div className="flex items-center justify-center gap-1 text-[18px] font-semibold leading-none text-[#177c38]">
+              <div className="flex items-center justify-center gap-1 text-[18px] font-semibold leading-none text-[#3a3a3a]">
+                {selectedParticipant?.role === 'ADMIN' && (
+                  <Avatar
+                    alt={selectedConversation?.title ?? 'support'}
+                    src={SUPPORT_AVATAR_SRC}
+                    className="h-10 w-10 border-[#f3bfd0]"
+                  />
+                )}
                 <span>@{selectedConversation?.title ?? 'chat'}</span>
-                <i className="fas fa-check-circle text-[14px] text-[#e73f36]"></i>
-                <span className={`text-[18px] ${isSocketConnected ? 'text-[#48a84f]' : 'text-[#8a8a8a]'}`}>
-                  {isSocketConnected ? 'Online' : 'Offline'}
+                {selectedParticipant?.role === 'ADMIN' && (
+                  <i className="fas fa-check-circle text-[14px] text-[#e73f36]"></i>
+                )}
+                <span
+                  className={`text-[18px] ${selectedParticipant?.online ? 'text-[#48a84f]' : 'text-[#8a8a8a]'}`}
+                >
+                  {selectedParticipantStatus}
                 </span>
               </div>
             </div>
@@ -839,7 +908,12 @@ export default function ChatBoxPage() {
 
                 return (
                   <div key={message.id} className={`flex items-start gap-2 ${isMine ? 'justify-end' : 'justify-start'}`}>
-                    {!isMine && <Avatar alt={message.sender.fullName ?? message.sender.username} />}
+                    {!isMine && (
+                      <Avatar
+                        alt={message.sender.fullName ?? message.sender.username}
+                        src={getChatAvatarSrc(selectedParticipant?.role)}
+                      />
+                    )}
                     <div className={isMine ? 'max-w-[82%] sm:max-w-[68%]' : 'max-w-[82%] sm:max-w-[72%]'}>
                       <div className={`rounded-[4px] px-3 py-2 text-[16px] leading-[1.3] ${isMine ? 'bg-[#0b7f9f] text-white' : 'bg-[#efefef] text-[#3f3f3f]'}`}>
                         {message.content}

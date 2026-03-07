@@ -117,6 +117,7 @@ model User {
   isActive      Boolean   @default(true)
   twoFactorEnabled Boolean @default(false)
   twoFactorSecret String?
+  lastSeenAt    DateTime?
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

@@ -8,7 +8,34 @@ import { PrismaService } from '@/database/prisma.service';
 
 @Injectable()
 export class ChatService {
+  private readonly onlineUsers = new Map<string, number>();
+
   constructor(private prisma: PrismaService) {}
+
+  markUserOnline(userId: string) {
+    const currentCount = this.onlineUsers.get(userId) ?? 0;
+    this.onlineUsers.set(userId, currentCount + 1);
+  }
+
+  async markUserOffline(userId: string) {
+    const currentCount = this.onlineUsers.get(userId) ?? 0;
+    if (currentCount > 1) {
+      this.onlineUsers.set(userId, currentCount - 1);
+      return;
+    }
+
+    this.onlineUsers.delete(userId);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        lastSeenAt: new Date(),
+      },
+    });
+  }
+
+  isUserOnline(userId: string) {
+    return (this.onlineUsers.get(userId) ?? 0) > 0;
+  }
 
   async listConversations(userId: string) {
     await this.ensureSupportConversation(userId);
@@ -34,6 +61,7 @@ export class ChatService {
                     username: true,
                     fullName: true,
                     role: true,
+                    lastSeenAt: true,
                   },
                 },
               },
@@ -89,7 +117,12 @@ export class ChatService {
             'Cuoc tro chuyen',
           updatedAt: participant.conversation.updatedAt,
           unreadCount,
-          otherParticipant: displayUser,
+          otherParticipant: displayUser
+            ? {
+                ...displayUser,
+                online: this.isUserOnline(displayUser.id),
+              }
+            : null,
           latestMessage: latestMessage
             ? {
                 id: latestMessage.id,
@@ -120,6 +153,7 @@ export class ChatService {
                 username: true,
                 fullName: true,
                 role: true,
+                lastSeenAt: true,
               },
             },
           },
@@ -152,6 +186,8 @@ export class ChatService {
         username: participant.user.username,
         fullName: participant.user.fullName,
         role: participant.user.role,
+        lastSeenAt: participant.user.lastSeenAt,
+        online: this.isUserOnline(participant.user.id),
       })),
       messages: conversation.messages.map((message) => ({
         id: message.id,

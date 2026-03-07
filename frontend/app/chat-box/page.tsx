@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client'
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
 import { Avatar, LoadingSpinner } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
-import { API_ENDPOINTS, getApiBaseUrlForSocket } from '@/lib/api'
+import { API_ENDPOINTS } from '@/lib/api'
 
 type ConversationListItem = {
   id: string
@@ -296,6 +296,7 @@ export default function ChatBoxPage() {
     [selectedParticipant?.lastSeenAt, selectedParticipant?.online],
   )
   const shouldDockComposerToKeyboard = isComposerFocused && mobileKeyboardOffset > 0
+  const socketBaseUrl = API_ENDPOINTS.CHAT.CONVERSATIONS.replace('/api/chat/conversations', '')
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -462,7 +463,7 @@ export default function ChatBoxPage() {
       return
     }
 
-    const socket = io(getApiBaseUrlForSocket(), {
+    const socket = io(socketBaseUrl, {
       auth: { token },
     })
     socketRef.current = socket
@@ -570,7 +571,7 @@ export default function ChatBoxPage() {
       }
       setIsSocketConnected(false)
     }
-  }, [isLoggedIn, user?.id])
+  }, [isLoggedIn, socketBaseUrl, user?.id])
 
   useEffect(() => {
     if (!socketRef.current || !selectedConversationId) {
